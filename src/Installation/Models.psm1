@@ -1,10 +1,11 @@
 Set-StrictMode -Version Latest
 
 Import-Module "$PSScriptRoot\..\Core\Configuration.psm1" -Force
-Import-Module "$PSScriptRoot\..\Core\Logging.psm1" -Force
 Import-Module "$PSScriptRoot\..\Core\Downloads.psm1" -Force
-Import-Module "$PSScriptRoot\..\Models\Models.psm1" -Force
 Import-Module "$PSScriptRoot\..\Core\FileSystem.psm1" -Force
+Import-Module "$PSScriptRoot\..\Core\Hashing.psm1" -Force
+Import-Module "$PSScriptRoot\..\Core\Logging.psm1" -Force
+Import-Module "$PSScriptRoot\..\Models\Models.psm1" -Force
 
 function Install-SingleModel {
 
@@ -20,44 +21,62 @@ function Install-SingleModel {
         $config.Paths.ModelsRoot `
         "$($Model.Category)\$($Model.FileName)"
 
-    if (Test-Path $destination) {
+    $alreadyInstalled = Test-Path $destination
 
-        Write-StudioLog -Level SUCCESS -Message "$($Model.Name) already installed."
+        if ($alreadyInstalled) {
 
-        return
-    }
-
-    if ([string]::IsNullOrWhiteSpace($Model.Uri)) {
-
-        Write-StudioLog -Level WARNING -Message "$($Model.Name) has no download URI. Skipping."
-
-        return
-    }
-
-    $modelFolder = Join-Path `
-        $config.Paths.ModelsRoot `
-        $Model.Category
-
-    Write-StudioLog -Level INFO -Message "Model folder: $modelFolder"
-
-    New-StudioDirectory -Path $modelFolder
-
-    Write-StudioLog -Level INFO -Message "Installing $($Model.Name)..."
-
-    Invoke-Download `
-        -Uri $Model.Uri `
-        -Destination $destination
-
-    if (Test-Path $destination) {
-
-        Write-StudioLog -Level SUCCESS -Message "$($Model.Name) installed."
+            Write-StudioLog -Level SUCCESS -Message "$($Model.Name) already installed."
 
     }
     else {
 
-        Write-StudioLog -Level ERROR -Message "$($Model.Name) installation failed."
+        if ([string]::IsNullOrWhiteSpace($Model.Uri)) {
+
+            Write-StudioLog -Level WARNING -Message "$($Model.Name) has no download URI. Skipping."
+
+            return
+        }
+
+        $modelFolder = Join-Path `
+            $config.Paths.ModelsRoot `
+            $Model.Category
+
+        New-StudioDirectory -Path $modelFolder
+
+        Write-StudioLog -Level INFO -Message "Installing $($Model.Name)..."
+
+        Invoke-Download `
+            -Uri $Model.Uri `
+            -Destination $destination
 
     }
+
+    if (-not (Test-Path $destination)) {
+
+        Write-StudioLog -Level ERROR -Message "$($Model.Name) installation failed."
+
+        return
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($Model.Sha256)) {
+
+        if (-not (Test-FileHash -Path $destination -Sha256 $Model.Sha256)) {
+
+            Write-StudioLog -Level ERROR -Message "$($Model.Name) SHA256 verification failed."
+
+            return
+        }
+
+        Write-StudioLog -Level SUCCESS -Message "$($Model.Name) SHA256 verified."
+
+    }
+
+    if (-not $alreadyInstalled) {
+
+        Write-StudioLog -Level SUCCESS -Message "$($Model.Name) installed."
+
+    }
+
 }
 
 function Install-Models {
@@ -79,6 +98,7 @@ function Install-Models {
     }
 
     Write-StudioLog -Level SUCCESS -Message "Manifest processed."
+
 }
 
 Export-ModuleMember -Function Install-Models

@@ -8,7 +8,7 @@
             Version     = "1.0"
             FileName    = "RealESRGAN_x4plus.pth"
             Uri         = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
-            Sha256      = ""
+            Sha256      = "4FA0D38905F75AC06EB49A7951B426670021BE3018265FD191D2125DF9D682F1"
             Required    = $true
         }
 
