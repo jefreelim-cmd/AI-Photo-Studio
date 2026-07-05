@@ -4,6 +4,7 @@ Import-Module "$PSScriptRoot\..\Core\Configuration.psm1" -Force
 Import-Module "$PSScriptRoot\..\Core\Logging.psm1" -Force
 Import-Module "$PSScriptRoot\..\Core\Downloads.psm1" -Force
 Import-Module "$PSScriptRoot\..\Models\Models.psm1" -Force
+Import-Module "$PSScriptRoot\..\Core\FileSystem.psm1" -Force
 
 function Install-SingleModel {
 
@@ -32,6 +33,14 @@ function Install-SingleModel {
 
         return
     }
+
+    $modelFolder = Join-Path `
+        $config.Paths.ModelsRoot `
+        $Model.Category
+
+    Write-StudioLog -Level INFO -Message "Model folder: $modelFolder"
+
+    New-StudioDirectory -Path $modelFolder
 
     Write-StudioLog -Level INFO -Message "Installing $($Model.Name)..."
 

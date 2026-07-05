@@ -17,7 +17,7 @@
             Category    = "facerestore_models"
             Version     = "1.4"
             FileName    = "GFPGANv1.4.pth"
-            Uri         = ""
+            Uri         = "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth"
             Sha256      = ""
             Required    = $true
         }
@@ -27,7 +27,7 @@
             Category    = "facerestore_models"
             Version     = "0.1"
             FileName    = "codeformer.pth"
-            Uri         = ""
+            Uri         = "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth"
             Sha256      = ""
             Required    = $true
         }
