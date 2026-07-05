@@ -1,12 +1,13 @@
 @{
 
     Models = @(
+
         @{
             Name        = "RealESRGAN_x4plus"
             Category    = "upscale_models"
             Version     = "1.0"
             FileName    = "RealESRGAN_x4plus.pth"
-            Uri         = ""
+            Uri         = "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth"
             Sha256      = ""
             Required    = $true
         }
@@ -30,5 +31,7 @@
             Sha256      = ""
             Required    = $true
         }
+
     )
+
 }

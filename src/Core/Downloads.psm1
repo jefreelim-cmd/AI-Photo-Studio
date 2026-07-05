@@ -1,5 +1,7 @@
 Set-StrictMode -Version Latest
 
+Import-Module "$PSScriptRoot\Logging.psm1" -Force
+
 function Invoke-Download {
 
     [CmdletBinding()]
