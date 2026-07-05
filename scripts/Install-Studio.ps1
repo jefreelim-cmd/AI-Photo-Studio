@@ -8,6 +8,9 @@ Import-Module "$PSScriptRoot\..\src\Core\Logging.psm1" -Force
 Import-Module "$PSScriptRoot\..\src\Core\Validation.psm1" -Force
 Import-Module "$PSScriptRoot\..\src\Installation\FolderStructure.psm1" -Force
 Import-Module "$PSScriptRoot\..\src\Installation\ComfyUI.psm1" -Force
+Import-Module "$PSScriptRoot\..\src\Installation\VirtualEnvironment.psm1" -Force
+Import-Module "$PSScriptRoot\..\src\Installation\PythonDependencies.psm1" -Force
+Import-Module "$PSScriptRoot\..\src\Installation\ComfyUIManager.psm1" -Force
 
 Write-StudioLog -Level INFO -Message "Starting AI Photo Studio installation..."
 
@@ -27,5 +30,8 @@ Write-StudioLog -Level SUCCESS -Message "Prerequisite validation passed."
 
 Initialize-FolderStructure
 Install-ComfyUI
+Initialize-VirtualEnvironment
+Install-PythonDependencies
+Install-ComfyUIManager
 
 Write-StudioLog -Level SUCCESS -Message "Installation complete."
