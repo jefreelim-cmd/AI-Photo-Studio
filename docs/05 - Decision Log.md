@@ -490,3 +490,45 @@ Workflow adoption will be based on benchmark results rather than popularity.
 
 Objective measurements produce better long-term decisions than trends.
 
+
+
+
+
+\## 2026-07-07
+
+
+
+\### Objective
+
+Evaluate a higher quality photo restoration workflow.
+
+
+
+\### Workflow
+
+\- CCSR + SUPIR Ultimate Restoration
+
+\- Source: <GitHub URL>
+
+
+
+\### Decisions
+
+\- Installed missing custom nodes.
+
+\- Downloaded missing models.
+
+\- Replaced CCSR\_Model\_Select with DownloadAndLoadCCSRModel.
+
+\- Patched CCSR import compatibility for modern ComfyUI.
+
+\- Successfully progressed workflow to CCSR\_Upscale.
+
+
+
+\### Outcome
+
+Workflow now executes successfully.
+
+Quality evaluation pending.
+
