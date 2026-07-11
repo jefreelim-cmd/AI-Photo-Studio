@@ -40,6 +40,7 @@
     OutputFolder    = "D:\AI-Photo-Studio\ComfyUI\output"
     TempFolder      = "D:\AI-Photo-Studio\ComfyUI\temp"
     LogFolder       = "D:\AI-Photo-Studio\ComfyUI\logs"
+    ProcessedFolder = "D:\AI-Photo-Studio\ComfyUI\processed"
 
     ###########################################################################
     # Output Naming

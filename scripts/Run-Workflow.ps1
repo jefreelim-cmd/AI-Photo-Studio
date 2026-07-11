@@ -178,7 +178,13 @@ if (Test-Path $expectedOutput) {
     Write-Host "Skipping workflow."
     Write-Host ""
 
-    return
+    return [PSCustomObject]@{
+
+    Status = "Skipped"
+
+    Output = $expectedOutput
+
+    }
 
 }
 
@@ -277,4 +283,14 @@ else {
     Write-Warning "Workflow completed but expected output was not found."
 
 }
+
+return [PSCustomObject]@{
+
+    Status = "Processed"
+
+    Output = $expectedOutput
+
+}
+
 Write-Host ""
+
