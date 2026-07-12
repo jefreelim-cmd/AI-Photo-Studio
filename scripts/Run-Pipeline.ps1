@@ -227,58 +227,53 @@ function Move-WorkflowOutput {
 
     $MovedFiles = @()
 
-foreach ($File in $WorkflowResult.OutputFiles) {
+    foreach ($File in $WorkflowResult.OutputFiles) {
 
-    $Destination = Join-Path `
-        $DestinationFolder `
-        $File.Filename
+        $Destination = Join-Path `
+            $DestinationFolder `
+            $File.Filename
 
-    if (Test-Path $Destination) {
+        if (Test-Path $Destination) {
 
-        Remove-Item `
-            $Destination `
-            -Force
+            Remove-Item `
+                -Path $Destination `
+                -Force
 
-    }
+        }
 
-    $maxRetries = 10
-    $retryDelayMs = 500
+        #
+        # Archive the generated output.
+        #
+        Copy-Item `
+            -Path $File.FullPath `
+            -Destination $Destination `
+            -Force `
+            -ErrorAction Stop
 
-    for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
-
+        #
+        # Best-effort cleanup of the temporary ComfyUI output.
+        #
         try {
 
-            Move-Item `
+            Remove-Item `
                 -Path $File.FullPath `
-                -Destination $Destination `
                 -Force `
                 -ErrorAction Stop
-
-            break
 
         }
         catch {
 
-            if ($attempt -eq $maxRetries) {
-                throw
-            }
-
-            Write-Host "File is locked. Retrying ($attempt/$maxRetries)..."
-
-            Start-Sleep -Milliseconds $retryDelayMs
+            Write-Log ("Temporary output cleanup deferred: {0}" -f $File.FullPath)
 
         }
 
+        $MovedFiles += $Destination
+
     }
-
-    $MovedFiles += $Destination
-
-}
 
     return $MovedFiles
 
 }
-
 ###########################################################################
 # Pipeline Processing
 ###########################################################################
