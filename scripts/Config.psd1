@@ -162,7 +162,7 @@ Workflows = @{
         FullRestore = @(
             "Kontext"
             "CCSR"
-            "Upscale"
+            #"Upscale"
         )
 
     }

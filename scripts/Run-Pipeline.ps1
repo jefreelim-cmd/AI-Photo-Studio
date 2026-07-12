@@ -172,6 +172,34 @@ function Reset-Runtime {
 
 }
 
+function Remove-RuntimeTemporaryImages {
+
+    param(
+        [string]$InputFolder
+    )
+
+    $Patterns = @(
+        "kontext_*",
+        "ccsr_*",
+        "upscale_*",
+        "face_*"
+    )
+
+    foreach ($Pattern in $Patterns) {
+
+        Get-ChildItem `
+            -Path $InputFolder `
+            -Filter $Pattern `
+            -File `
+            -ErrorAction SilentlyContinue |
+        Remove-Item `
+            -Force `
+            -ErrorAction SilentlyContinue
+
+    }
+
+}
+
 function Move-WorkflowOutput {
 
     param(
@@ -199,27 +227,53 @@ function Move-WorkflowOutput {
 
     $MovedFiles = @()
 
-    foreach ($File in $WorkflowResult.OutputFiles) {
+foreach ($File in $WorkflowResult.OutputFiles) {
 
-        $Destination = Join-Path `
-            $DestinationFolder `
-            $File.Filename
+    $Destination = Join-Path `
+        $DestinationFolder `
+        $File.Filename
 
-        if (Test-Path $Destination) {
+    if (Test-Path $Destination) {
 
-            Remove-Item `
-                $Destination `
-                -Force
+        Remove-Item `
+            $Destination `
+            -Force
+
+    }
+
+    $maxRetries = 10
+    $retryDelayMs = 500
+
+    for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+
+        try {
+
+            Move-Item `
+                -Path $File.FullPath `
+                -Destination $Destination `
+                -Force `
+                -ErrorAction Stop
+
+            break
+
+        }
+        catch {
+
+            if ($attempt -eq $maxRetries) {
+                throw
+            }
+
+            Write-Host "File is locked. Retrying ($attempt/$maxRetries)..."
+
+            Start-Sleep -Milliseconds $retryDelayMs
 
         }
 
-        Move-Item `
-            $File.FullPath `
-            $Destination
-
-        $MovedFiles += $Destination
-
     }
+
+    $MovedFiles += $Destination
+
+}
 
     return $MovedFiles
 
@@ -257,6 +311,7 @@ $OriginalImage = $Image.FullName
 
 $CurrentImage = $OriginalImage
 
+
 ###########################################################################
 # Prepare Runtime
 ###########################################################################
@@ -277,9 +332,18 @@ foreach ($WorkflowName in $PipelineStages) {
 
 if ($CurrentImage -ne $OriginalImage) {
 
+    #
+    # Remove any temporary runtime images left by previous workflow stages.
+    #
+    Remove-RuntimeTemporaryImages `
+        -InputFolder $InputFolder
+
+    #
+    # Copy the current stage image into the ComfyUI runtime input folder.
+    #
     Copy-Item `
-        $CurrentImage `
-        (Join-Path $InputFolder (Split-Path $CurrentImage -Leaf)) `
+        -Path $CurrentImage `
+        -Destination (Join-Path $InputFolder (Split-Path $CurrentImage -Leaf)) `
         -Force
 
 }
