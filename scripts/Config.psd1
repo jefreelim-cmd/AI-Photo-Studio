@@ -115,7 +115,7 @@ Workflows = @{
 
         Name = "Face Restoration"
 
-        File = "02 - Face Restoration - CodeFormer.json"
+        File = "02 - Face Restoration - CodeFormer.api.json"
 
         Prefix = "codeformer"
 
@@ -129,7 +129,7 @@ Workflows = @{
 
         Name = "Upscale"
 
-        File = "03 - Basic 4x Upscale.json"
+        File = "03 - Basic 4x Upscale.api.json"
 
         Prefix = "upscale"
 

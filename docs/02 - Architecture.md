@@ -154,3 +154,11 @@ Future Modules
 
 \- Current best-practice models only
 
+
+
+Checkpoint Principle
+
+
+
+Each pipeline stage produces a checkpoint image stored in its stage folder. Checkpoints are retained after successful execution and are never modified by the pipeline. Subsequent stages consume a copy of the checkpoint, allowing any stage to be rerun independently without repeating previous stages.
+
