@@ -1,44 +1,71 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$Workflow,
 
     [Parameter(Mandatory)]
+    [ValidateNotNullOrEmpty()]
     [string]$InputImage
 )
 
+Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
 
 ###########################################################################
 # Load Configuration
 ###########################################################################
 
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 $ConfigFile = Join-Path $ScriptRoot "Config.psd1"
 
 if (!(Test-Path $ConfigFile)) {
-    throw "Config.psd1 not found."
+    throw "Configuration file not found: $ConfigFile"
 }
 
 $config = Import-PowerShellDataFile $ConfigFile
 
 ###########################################################################
-# Validate Workflow
+# Resolve Runtime Folders
 ###########################################################################
 
-if (!$config.Workflows.ContainsKey($Workflow)) {
+$InputFolder = Join-Path `
+    $config.ComfyUIRoot `
+    $config.InputFolder
+
+$OutputFolder = Join-Path `
+    $config.ComfyUIRoot `
+    $config.OutputFolder
+
+$ProcessedFolder = Join-Path `
+    $config.ComfyUIRoot `
+    $config.ProcessedFolder
+
+$TempFolder = Join-Path `
+    $config.ComfyUIRoot `
+    $config.TempFolder
+
+$LogFolder = Join-Path `
+    $config.ComfyUIRoot `
+    $config.LogFolder
+
+###########################################################################
+# Resolve Workflow
+###########################################################################
+
+if (-not $config.Workflows.ContainsKey($Workflow)) {
     throw "Unknown workflow '$Workflow'."
 }
 
-$workflowConfig = $config.Workflows[$Workflow]
+$WorkflowConfig = $config.Workflows[$Workflow]
 
-if (!$workflowConfig.Enabled) {
+if (-not $WorkflowConfig.Enabled) {
     throw "Workflow '$Workflow' is disabled."
 }
 
 ###########################################################################
-# Validate Image
+# Validate Input Image
 ###########################################################################
 
 if (!(Test-Path $InputImage)) {
@@ -46,14 +73,20 @@ if (!(Test-Path $InputImage)) {
 }
 
 ###########################################################################
-# Workflow File
+# Resolve Workflow File
 ###########################################################################
 
-$WorkflowFile = Join-Path $config.RepositoryRoot "workflows\$($workflowConfig.File)"
+$WorkflowFile = Join-Path `
+    (Join-Path $config.RepositoryRoot $config.WorkflowFolder) `
+    $WorkflowConfig.File
 
 if (!(Test-Path $WorkflowFile)) {
     throw "Workflow file not found:`n$WorkflowFile"
 }
+
+###########################################################################
+# Load Workflow JSON
+###########################################################################
 
 Write-Host ""
 Write-Host "====================================="
@@ -61,236 +94,212 @@ Write-Host " AI Photo Studio"
 Write-Host "====================================="
 Write-Host ""
 
-Write-Host "Workflow :" $workflowConfig.Name
-Write-Host "Image    :" (Split-Path $InputImage -Leaf)
+Write-Host ("Workflow : {0}" -f $Workflow)
+Write-Host ("Image    : {0}" -f (Split-Path $InputImage -Leaf))
 Write-Host ""
 
-###########################################################################
-# Load Workflow JSON
-###########################################################################
-
-Write-Host "Loading workflow..."
-
-$workflowJson = Get-Content $WorkflowFile -Raw | ConvertFrom-Json
-
-Write-Host "Loaded workflow successfully."
-
-$nodeCount = ($workflowJson.PSObject.Properties).Count
-
-#Write-Host ("Nodes found: {0}" -f $nodeCount)
-Write-Host ""
+$WorkflowJson = Get-Content `
+    $WorkflowFile `
+    -Raw |
+    ConvertFrom-Json
 
 ###########################################################################
-# Locate Workflow Nodes
+# Locate Required Nodes
 ###########################################################################
 
-Write-Host "Searching workflow..."
+$LoadImageNode = $null
+$SaveImageNode = $null
 
-$loadImageNode = $null
-$saveImageNode = $null
+foreach ($Node in $WorkflowJson.PSObject.Properties) {
 
-foreach ($node in $workflowJson.PSObject.Properties) {
+    switch ($Node.Value.class_type) {
 
-    if ($node.Value.class_type -eq "LoadImage") {
-        $loadImageNode = $node
-    }
+        "LoadImage" {
 
-    if ($node.Value.class_type -eq "SaveImage") {
-        $saveImageNode = $node
-    }
+            $LoadImageNode = $Node
 
-}
+        }
 
-if ($null -eq $loadImageNode) {
-    throw "LoadImage node not found."
-}
+        "SaveImage" {
 
-if ($null -eq $saveImageNode) {
-    throw "SaveImage node not found."
-}
+            $SaveImageNode = $Node
 
-Write-Host ("LoadImage Node : {0}" -f $loadImageNode.Name)
-Write-Host ("SaveImage Node : {0}" -f $saveImageNode.Name)
-Write-Host ""
-
-###########################################################################
-# Update LoadImage Node
-###########################################################################
-
-Write-Host "Updating LoadImage node..."
-
-$imageFileName = Split-Path $InputImage -Leaf
-
-$imageFileName = Split-Path $InputImage -Leaf
-
-$loadImageNode.Value.inputs.image = $imageFileName
-
-Write-Host ("Image set to : {0}" -f $loadImageNode.Value.inputs.image)
-
-###########################################################################
-# Update SaveImage Node
-###########################################################################
-
-Write-Host "Updating SaveImage node..."
-
-###########################################################################
-# Build Output Filename
-###########################################################################
-
-$inputName = [System.IO.Path]::GetFileNameWithoutExtension($InputImage)
-
-if ($config.Output.ReplaceSpacesWith) {
-    $inputName = $inputName.Replace(" ", $config.Output.ReplaceSpacesWith)
-}
-
-if ($config.Output.RemoveInvalidCharacters) {
-
-    foreach ($char in [System.IO.Path]::GetInvalidFileNameChars()) {
-
-      $inputName = $inputName.Replace($char.ToString(), "")
+        }
 
     }
 
 }
 
-$outputName = "{0}_{1}" -f `
-    $workflowConfig.Prefix, `
-    $inputName
+if ($null -eq $LoadImageNode) {
+    throw "Workflow does not contain a LoadImage node."
+}
 
-$saveImageNode.Value.inputs.filename_prefix = $outputName
-
-Write-Host ("Output Prefix : {0}" -f $saveImageNode.Value.inputs.filename_prefix)
-Write-Host ""
-
-###########################################################################
-# Check For Existing Output
-###########################################################################
-
-$expectedOutput = Join-Path `
-    $config.OutputFolder `
-    ($outputName + "_00001_." + $config.Output.Extension)
-
-if (Test-Path $expectedOutput) {
-
-    Write-Host ""
-    Write-Host "Output already exists."
-    Write-Host $expectedOutput
-    Write-Host "Skipping workflow."
-    Write-Host ""
-
-    return [PSCustomObject]@{
-
-    Status = "Skipped"
-
-    Output = $expectedOutput
-
-    }
-
+if ($null -eq $SaveImageNode) {
+    throw "Workflow does not contain a SaveImage node."
 }
 
 ###########################################################################
-# Submit Workflow to ComfyUI
+# Inject Runtime Values
 ###########################################################################
 
-Write-Host "Submitting workflow to ComfyUI..."
+$ImageName = Split-Path $InputImage -Leaf
 
-$body = @{
-    prompt = $workflowJson
+$LoadImageNode.Value.inputs.image = $ImageName
+
+$Prefix = "{0}_{1}" -f `
+    $WorkflowConfig.Prefix, `
+    ([System.IO.Path]::GetFileNameWithoutExtension($InputImage))
+
+$SaveImageNode.Value.inputs.filename_prefix = $Prefix
+
+Write-Host ("Input Image  : {0}" -f $ImageName)
+Write-Host ("Output Prefix: {0}" -f $Prefix)
+Write-Host ""
+
+
+###########################################################################
+# Submit Workflow
+###########################################################################
+
+$Request = @{
+
+    prompt = $WorkflowJson
+
 } | ConvertTo-Json -Depth 100
 
-try {
+###########################################################################
+# Record Workflow Start Time
+###########################################################################
 
-    $response = Invoke-RestMethod `
-        -Uri ($config.ComfyUI.Url + $config.ComfyUI.PromptEndpoint) `
-        -Method Post `
-        -ContentType "application/json" `
-        -Body $body
+$StartTime = Get-Date
 
-}
-catch {
+Write-Host "Submitting workflow..."
 
-    Write-Host ""
-    Write-Host "ComfyUI returned an error:"
-    Write-Host $_.Exception.Message
+$Response = Invoke-RestMethod `
+    -Uri ($config.ComfyUI.Url + $config.ComfyUI.PromptEndpoint) `
+    -Method Post `
+    -ContentType "application/json" `
+    -Body $Request
 
-    if ($_.ErrorDetails.Message) {
-        Write-Host ""
-        Write-Host $_.ErrorDetails.Message
-    }
-
-    throw
-}
-
-if ($null -eq $response.prompt_id) {
+if (-not $Response.prompt_id) {
     throw "ComfyUI did not return a Prompt ID."
 }
 
-$promptId = $response.prompt_id
+$PromptId = $Response.prompt_id
 
-Write-Host ("Prompt ID : {0}" -f $promptId)
+Write-Host ("Prompt ID : {0}" -f $PromptId)
 Write-Host ""
 
 ###########################################################################
-# Wait For Workflow Completion
+# Wait For Completion
 ###########################################################################
 
-Write-Host "Waiting for workflow to complete..."
+$HistoryUrl = "{0}{1}/{2}" -f `
+    $config.ComfyUI.Url, `
+    $config.ComfyUI.HistoryEndpoint, `
+    $PromptId
 
-$historyUrl = "{0}{1}/{2}" -f `
-    $config.ComfyUI.Url,
-    $config.ComfyUI.HistoryEndpoint,
-    $promptId
+Write-Host "Waiting for workflow completion..."
 
-$completed = $false
+$Completed = $false
 
-while (-not $completed) {
+while (-not $Completed) {
 
     Start-Sleep -Seconds $config.ComfyUI.PollIntervalSec
 
     try {
 
-        $history = Invoke-RestMethod `
-            -Uri $historyUrl `
+        $History = Invoke-RestMethod `
+            -Uri $HistoryUrl `
             -Method Get
 
-        if ($history.PSObject.Properties.Name -contains $promptId) {
+        if ($History.PSObject.Properties.Name -contains $PromptId) {
 
-            $completed = $true
+            $Completed = $true
 
         }
 
     }
     catch {
 
-        # Ignore while the workflow is still running
+        # Workflow still running
+
+    }
+
+}
+###########################################################################
+# Detect Generated Output Files
+###########################################################################
+
+Write-Host ""
+Write-Host "Workflow completed."
+Write-Host ""
+
+###########################################################################
+# Detect Workflow Output
+#
+# ComfyUI does not reliably populate the History API outputs on our
+# installation. Detect generated images by scanning the runtime output
+# folder for files written during this workflow execution.
+###########################################################################
+
+$ExpectedPrefix = "$($WorkflowConfig.Prefix)_"
+
+$NewFiles = @(
+    Get-ChildItem `
+        -Path $OutputFolder `
+        -Filter "$ExpectedPrefix*.png" `
+        -File |
+    Where-Object {
+        $_.LastWriteTime -ge $StartTime.AddSeconds(-1)
+    }
+)
+
+if ($NewFiles.Count -eq 0) {
+    throw "Workflow completed but no workflow output files were detected."
+}
+
+$OutputFiles = @()
+
+foreach ($File in $NewFiles) {
+
+    $OutputFiles += [PSCustomObject]@{
+
+        Filename  = $File.Name
+
+        FullPath  = $File.FullName
+
+        Type      = "output"
+
+        Subfolder = ""
 
     }
 
 }
 
+Write-Host "Generated Output(s)"
+Write-Host "-------------------"
+
+foreach ($File in $OutputFiles) {
+
+    Write-Host $File.FullPath
+
+}
+
 Write-Host ""
-Write-Host "Workflow completed."
 
-if (Test-Path $expectedOutput) {
-
-    Write-Host ""
-    Write-Host "Output created:"
-    Write-Host $expectedOutput
-
-}
-else {
-
-    Write-Warning "Workflow completed but expected output was not found."
-
-}
+###########################################################################
+# Return Result
+###########################################################################
 
 return [PSCustomObject]@{
 
-    Status = "Processed"
+    Status      = "Processed"
 
-    Output = $expectedOutput
+    Workflow    = $Workflow
+
+    PromptId    = $PromptId
+
+    OutputFiles = $OutputFiles
 
 }
-
-Write-Host ""
-

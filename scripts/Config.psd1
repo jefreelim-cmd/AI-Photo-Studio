@@ -15,14 +15,14 @@
 
     ComfyUI = @{
 
-        Url                = "http://127.0.0.1:8188"
+        Url               = "http://127.0.0.1:8188"
 
-        PromptEndpoint     = "/prompt"
-        HistoryEndpoint    = "/history"
-        ViewEndpoint       = "/view"
+        PromptEndpoint    = "/prompt"
+        HistoryEndpoint   = "/history"
+        ViewEndpoint      = "/view"
 
-        RequestTimeoutSec  = 300
-        PollIntervalSec    = 2
+        RequestTimeoutSec = 300
+        PollIntervalSec   = 2
 
     }
 
@@ -32,31 +32,34 @@
 
     RepositoryRoot = "D:\AI-Photo-Studio\AI-Photo-Studio"
 
+    WorkflowFolder = "workflows"
+
     ###########################################################################
     # Runtime Folders
     ###########################################################################
 
-    InputFolder     = "D:\AI-Photo-Studio\ComfyUI\input"
-    OutputFolder    = "D:\AI-Photo-Studio\ComfyUI\output"
-    TempFolder      = "D:\AI-Photo-Studio\ComfyUI\temp"
-    LogFolder       = "D:\AI-Photo-Studio\ComfyUI\logs"
-    ProcessedFolder = "D:\AI-Photo-Studio\ComfyUI\processed"
+    InputFolder     = "input"
+    OutputFolder    = "output"
+    ArchiveFolder   = "archive"
+    TempFolder      = "temp"
+    LogFolder       = "logs"
+    ProcessedFolder = "processed"
 
     ###########################################################################
     # Output Naming
     ###########################################################################
 
-Output = @{
+    Output = @{
 
-    FilenameFormat = "{Workflow}_{InputFilename}"
+        FilenameFormat          = "{Workflow}_{InputFilename}"
 
-    ReplaceSpacesWith = "_"
+        ReplaceSpacesWith       = "_"
 
-    RemoveInvalidCharacters = $true
+        RemoveInvalidCharacters = $true
 
-    Extension = "png"
+        Extension               = "png"
 
-}
+    }
 
     ###########################################################################
     # Supported Image Types
@@ -76,58 +79,65 @@ Output = @{
     # Workflows
     ###########################################################################
 
-    Workflows = @{
+Workflows = @{
 
-        Kontext = @{
+    Kontext = @{
 
-            Enabled = $true
+        Enabled = $true
 
-            Name = "Photo Restoration"
+        Name = "Photo Restoration"
 
-            File = "01 - Photo Restoration - Kontext.api.json"
+        File = "01 - Photo Restoration - Kontext.api.json"
 
-            Prefix = "kontext"
+        Prefix = "kontext"
 
-        }
-
-
-        CCSR = @{
-
-            Enabled = $true
-
-            Name = "Photo Restoration"
-
-            File = "02 - Photo Restoration - CCSR.json"
-
-            Prefix = "ccsr"
-
-        }
-
-        CodeFormer = @{
-
-            Enabled = $true
-
-            Name = "Face Restoration"
-
-            File = "02 - Face Restoration - CodeFormer.json"
-
-            Prefix = "codeformer"
-
-        }
-
-        Upscale = @{
-
-            Enabled = $true
-
-            Name = "Upscale"
-
-            File = "03 - Basic 4x Upscale.json"
-
-            Prefix = "upscale"
-
-        }
+        StageFolder = "01 - Kontext"
 
     }
+
+    CCSR = @{
+
+        Enabled = $true
+
+        Name = "Photo Restoration"
+
+        File = "02 - Photo Restoration - CCSR Only.api.json"
+
+        Prefix = "ccsr"
+
+        StageFolder = "02 - CCSR"
+
+    }
+
+    CodeFormer = @{
+
+        Enabled = $true
+
+        Name = "Face Restoration"
+
+        File = "02 - Face Restoration - CodeFormer.json"
+
+        Prefix = "codeformer"
+
+        StageFolder = "03 - CodeFormer"
+
+    }
+
+    Upscale = @{
+
+        Enabled = $true
+
+        Name = "Upscale"
+
+        File = "03 - Basic 4x Upscale.json"
+
+        Prefix = "upscale"
+
+        StageFolder = "04 - Upscale"
+
+    }
+
+}
 
     ###########################################################################
     # Pipelines
@@ -135,25 +145,25 @@ Output = @{
 
     Pipelines = @{
 
-      Restore = @(
-        "Kontext"
-      )
+        Restore = @(
+            "Kontext"
+        )
 
-      RestoreAndUpscale = @(
-        "Kontext"
-        "Upscale"
-      )
+        RestoreAndUpscale = @(
+            "Kontext"
+            "Upscale"
+        )
 
-      Portrait = @(
-        "Kontext"
-        "CodeFormer"
-      )
+        Portrait = @(
+            "Kontext"
+            "CodeFormer"
+        )
 
-      FullRestore = @(
-        "Kontext"
-        "CCSR"
-        "Upscale"
-      )
+        FullRestore = @(
+            "Kontext"
+            "CCSR"
+            "Upscale"
+        )
 
     }
 
@@ -163,11 +173,11 @@ Output = @{
 
     Logging = @{
 
-        Enabled = $true
+        Enabled      = $true
 
         WriteConsole = $true
 
-        WriteFile = $true
+        WriteFile    = $true
 
     }
 

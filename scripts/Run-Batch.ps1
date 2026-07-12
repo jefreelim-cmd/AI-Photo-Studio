@@ -2,11 +2,27 @@
 param(
 
     [Parameter(Mandatory)]
-    [string]$Workflow
+    [string]$Workflow,
+
+    [string]$InputFolder,
+
+    [string]$OutputFolder,
+
+    [string]$ProcessedFolder
 
 )
 
 $ErrorActionPreference = "Stop"
+
+###########################################################################
+# Initialise
+###########################################################################
+
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+$processedCount = 0
+$skippedCount = 0
+$failedCount = 0
 
 ###########################################################################
 # Load Configuration
@@ -19,6 +35,22 @@ $config = Import-PowerShellDataFile (
 )
 
 ###########################################################################
+# Resolve Folders
+###########################################################################
+
+if ([string]::IsNullOrWhiteSpace($InputFolder)) {
+    $InputFolder = $config.InputFolder
+}
+
+if ([string]::IsNullOrWhiteSpace($OutputFolder)) {
+    $OutputFolder = $config.OutputFolder
+}
+
+if ([string]::IsNullOrWhiteSpace($ProcessedFolder)) {
+    $ProcessedFolder = $config.ProcessedFolder
+}
+
+###########################################################################
 # Locate Images
 ###########################################################################
 
@@ -27,7 +59,7 @@ Write-Host "Searching input folder..."
 Write-Host ""
 
 $images = Get-ChildItem `
-    -Path $config.InputFolder `
+    -Path $InputFolder `
     -File |
 Where-Object {
 
@@ -50,39 +82,66 @@ foreach ($image in $images) {
     Write-Host "--------------------------------------------------"
 
     $result = & (
-        Join-Path $ScriptRoot "Run-Workflow.ps1"
+      Join-Path $ScriptRoot "Run-Workflow.ps1"
     ) `
-        -Workflow $Workflow `
-        -InputImage $image.FullName
+      -Workflow $Workflow `
+      -InputImage $image.FullName `
+      -OutputFolder $OutputFolder
 
 ###########################################################################
 # Move Processed Image
 ###########################################################################
 
-if ($result.Status -in @("Processed", "Skipped")) {
+switch ($result.Status) {
 
-    $destination = Join-Path `
-        $config.ProcessedFolder `
-        $image.Name
+    "Processed" {
 
-    Move-Item `
-        -Path $image.FullName `
-        -Destination $destination `
-        -Force
+        $processedCount++
 
-    Write-Host ("Moved to : {0}" -f $destination)
-    Write-Host ""
+        $destination = Join-Path `
+            $ProcessedFolder `
+            $image.Name
+
+        Move-Item `
+            -Path $image.FullName `
+            -Destination $destination `
+            -Force
+
+        Write-Host ("Moved to : {0}" -f $destination)
+        Write-Host ""
+
+    }
+
+    "Skipped" {
+
+        $skippedCount++
+
+        $destination = Join-Path `
+            $ProcessedFolder `
+            $image.Name
+
+        Move-Item `
+            -Path $image.FullName `
+            -Destination $destination `
+            -Force
+
+        Write-Host ("Moved to : {0}" -f $destination)
+        Write-Host ""
+
+    }
+
+    Default {
+
+        $failedCount++
+
+        Write-Warning ("Image not moved: {0}" -f $image.Name)
+
+    }
 
 }
-else {
-
-    Write-Warning ("Image not moved: {0}" -f $image.Name)
 
 }
-
-    Write-Host ""
-
-}
+$stopwatch.Stop()
 
 ###########################################################################
 # Complete
@@ -94,4 +153,13 @@ Write-Host " Batch Complete"
 Write-Host "====================================="
 Write-Host ""
 
-Write-Host ("Images Processed : {0}" -f $images.Count)
+Write-Host ("Processed : {0}" -f $processedCount)
+Write-Host ("Skipped  : {0}" -f $skippedCount)
+Write-Host ("Failed   : {0}" -f $failedCount)
+Write-Host ("Total    : {0}" -f $images.Count)
+Write-Host ""
+Write-Host ("Elapsed  : {0:hh\:mm\:ss}" -f $stopwatch.Elapsed)
+Write-Host ""
+Write-Host ("Input Folder     : {0}" -f $InputFolder)
+Write-Host ("Output Folder    : {0}" -f $OutputFolder)
+Write-Host ("Processed Folder : {0}" -f $ProcessedFolder)
