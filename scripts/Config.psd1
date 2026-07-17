@@ -115,7 +115,7 @@ Workflows = @{
 
         Name = "Face Restoration"
 
-        File = "02 - Face Restoration - CodeFormer.api.json"
+        File = "03 - Face Restoration - CodeFormer.api.json"
 
         Prefix = "codeformer"
 
@@ -162,7 +162,7 @@ Workflows = @{
         FullRestore = @(
             "Kontext"
             "CCSR"
-            #"Upscale"
+            "CodeFormer"
         )
 
     }

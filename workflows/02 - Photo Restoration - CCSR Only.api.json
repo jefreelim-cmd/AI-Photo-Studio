@@ -1,7 +1,7 @@
 {
   "1": {
     "inputs": {
-      "image": "ComfyUI_00019_.png"
+      "image": "ComfyUI_00003_.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -21,9 +21,9 @@
     "inputs": {
       "resize_method": "lanczos",
       "scale_by": 3,
-      "steps": 27,
-      "t_max": 0.6667,
-      "t_min": 0.3333,
+      "steps": 20,
+      "t_max": 0.5,
+      "t_min": 0.4,
       "sampling_method": "ccsr_tiled_mixdiff",
       "tile_size": 512,
       "tile_stride": 256,
