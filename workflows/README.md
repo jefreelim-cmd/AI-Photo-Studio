@@ -20,6 +20,10 @@ This folder contains ComfyUI workflows for restoring photographs, repairing loca
 | `03 - Face Restoration - CodeFormer.api.json` | Automation version of the CodeFormer face-restoration workflow. | Run face restoration from the pipeline. |
 | `08 - Face Restoration - GFPGAN.json` | Repairs faces with GFPGAN v1.4. | Provide an alternative to CodeFormer for faces that need a softer, more natural repair. |
 | `08 - Face Restoration - GFPGAN.api.json` | Automation version of the GFPGAN face-restoration workflow. | Run GFPGAN as the face-restoration stage in the separate FullRestoreGFPGAN pipeline. |
+| `05A - Colour Restoration.json` | Conservatively restores faded colour, colour casts, tone, and saturation without generating new image content. | Improve old colour photographs while preserving faces, clothing, objects, composition, grain, and period character. |
+| `05A - Colour Restoration.api.json` | Automation version of the non-generative colour-restoration workflow. | Run safe colour and tonal correction from the scripts without requiring a mask. |
+| `05B - Black & White Colourization.json` | Colourizes monochrome photographs with conservative FLUX Kontext settings. | Create historically plausible colour while preserving composition and recognizable faces. |
+| `05B - Black & White Colourization.api.json` | Automation version of the B&W colourization workflow. | Run conservative colourization as a separate optional stage. |
 | `03 - Basic 4x Upscale.json` | Enlarges an image by four times with an upscaling model. | Create a larger image while retaining as much visible detail as possible. |
 | `03 - Basic 4x Upscale.api.json` | Automation version of the 4x upscale workflow. | Run the 4x upscale stage from the pipeline. |
 
@@ -68,4 +72,6 @@ This folder contains ComfyUI workflows for restoring photographs, repairing loca
 - For a new setting or clothing, use **05 - Scene Regeneration**.
 - For a short moving clip, use **07 - Face Preserving Image To Video - Wan**.
 - Keep the original image. Every workflow can make mistakes, especially around faces, hands, writing, and heavily damaged areas.
+
+
 

@@ -164,6 +164,34 @@ Workflows = @{
 
     }
 
+    ColourRestoration = @{
+
+        Enabled = $true
+
+        Name = 'Colour Restoration'
+
+        File = '05A - Colour Restoration.api.json'
+
+        Prefix = 'colour_restored'
+
+        StageFolder = '05A - Colour Restoration'
+
+    }
+
+    BlackWhiteColourization = @{
+
+        Enabled = $true
+
+        Name = 'Black & White Colourization'
+
+        File = '05B - Black & White Colourization.api.json'
+
+        Prefix = 'colourized'
+
+        StageFolder = '05B - Black & White Colourization'
+
+    }
+
     SceneRegenerate = @{
 
         Enabled = $true
@@ -229,4 +257,6 @@ Workflows = @{
     }
 
 }
+
+
 

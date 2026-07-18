@@ -1,0 +1,196 @@
+{
+  "1": {
+    "inputs": {
+      "image": "Original.jpg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load black & white image"
+    }
+  },
+  "2": {
+    "inputs": {
+      "weight_dtype": "default",
+      "unet_name": "flux1-dev-kontext_fp8_scaled.safetensors"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "FLUX Kontext fallback"
+    }
+  },
+  "3": {
+    "inputs": {
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux",
+      "device": "default",
+      "clip_name1": "t5\\t5xxl_fp8_e4m3fn.safetensors"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "Load FLUX text encoders"
+    }
+  },
+  "4": {
+    "inputs": {
+      "vae_name": "FLUX1\\ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load FLUX VAE"
+    }
+  },
+  "5": {
+    "inputs": {
+      "text": "Colourize this historical black and white photograph using realistic, historically plausible colours. Preserve every person's exact facial identity, age, expression, hairstyle, body proportions, pose, clothing, camera angle, composition, perspective and photographic character. Generate believable muted skin tones, clothing colours, vegetation, sky, buildings and objects consistent with the historical period and surrounding visual evidence. Where colour cannot be known, choose conservative natural colours instead of vivid artistic colours. Do not modernise, beautify faces, redesign clothing, replace objects, alter lighting, create a painting, or change image structure. The final image should look like an authentic colour photograph from the same era.",
+      "clip": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Conservative historical colour prompt"
+    }
+  },
+  "6": {
+    "inputs": {
+      "guidance": 2.2,
+      "conditioning": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "Conservative FLUX guidance"
+    }
+  },
+  "7": {
+    "inputs": {
+      "conditioning": [
+        "16",
+        0
+      ]
+    },
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "Negative conditioning"
+    }
+  },
+  "8": {
+    "inputs": {
+      "image": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "FluxKontextImageScale",
+    "_meta": {
+      "title": "Preserve input framing"
+    }
+  },
+  "9": {
+    "inputs": {
+      "pixels": [
+        "8",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "Encode original structure"
+    }
+  },
+  "10": {
+    "inputs": {
+      "latent": [
+        "9",
+        0
+      ],
+      "conditioning": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "ReferenceLatent",
+    "_meta": {
+      "title": "Reference-latent identity preservation"
+    }
+  },
+  "11": {
+    "inputs": {
+      "model": [
+        "2",
+        0
+      ],
+      "seed": 234567891,
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "9",
+        0
+      ],
+      "steps": 25,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "positive": [
+        "10",
+        0
+      ],
+      "denoise": 0.25,
+      "cfg": 1.0
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "Conservative colourization sampler"
+    }
+  },
+  "12": {
+    "inputs": {
+      "samples": [
+        "11",
+        0
+      ],
+      "vae": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "Decode colourized image"
+    }
+  },
+  "13": {
+    "inputs": {
+      "images": [
+        "12",
+        0
+      ],
+      "filename_prefix": "colourized_"
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save colourized result"
+    }
+  },
+  "16": {
+    "_meta": {
+      "title": "Colourization negative prompt"
+    },
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "HDR, oversaturated, neon colours, modern fashion, plastic skin, face beautification, face replacement, face swap, anime, painting, illustration, CGI, modern smartphone look, incorrect skin tone, orange skin, green skin, purple shadows, invented objects, text, watermark",
+      "clip": [
+        "3",
+        0
+      ]
+    }
+  }
+}
