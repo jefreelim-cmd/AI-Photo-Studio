@@ -1,0 +1,430 @@
+{
+  "1": {
+    "_meta": {
+      "title": "Load Image — use Mask Editor"
+    },
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "Original.jpg"
+    }
+  },
+  "2": {
+    "_meta": {
+      "title": "Original image"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "1",
+        0
+      ]
+    }
+  },
+  "3": {
+    "_meta": {
+      "title": "Stabilize painted mask"
+    },
+    "class_type": "INPAINT_StabilizeMask",
+    "inputs": {
+      "epsilon": 0.01,
+      "mask": [
+        "1",
+        1
+      ]
+    }
+  },
+  "4": {
+    "_meta": {
+      "title": "Generation Mask — grow 8, blur 8"
+    },
+    "class_type": "INPAINT_ExpandMask",
+    "inputs": {
+      "blur": 8,
+      "grow": 8,
+      "mask": [
+        "3",
+        0
+      ],
+      "blur_type": "gaussian"
+    }
+  },
+  "5": {
+    "_meta": {
+      "title": "Original painted mask preview"
+    },
+    "class_type": "MaskToImage",
+    "inputs": {
+      "mask": [
+        "1",
+        1
+      ]
+    }
+  },
+  "6": {
+    "_meta": {
+      "title": "Original painted mask"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "5",
+        0
+      ]
+    }
+  },
+  "7": {
+    "_meta": {
+      "title": "Generation mask preview"
+    },
+    "class_type": "MaskToImage",
+    "inputs": {
+      "mask": [
+        "4",
+        0
+      ]
+    }
+  },
+  "8": {
+    "_meta": {
+      "title": "Expanded generation mask"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "7",
+        0
+      ]
+    }
+  },
+  "9": {
+    "_meta": {
+      "title": "Crop damage with 192 px context"
+    },
+    "class_type": "ImageCropByMaskAndResize",
+    "inputs": {
+      "min_crop_resolution": 256,
+      "padding": 192,
+      "base_resolution": 1024,
+      "mask": [
+        "4",
+        0
+      ],
+      "image": [
+        "1",
+        0
+      ],
+      "max_crop_resolution": 1024
+    }
+  },
+  "10": {
+    "_meta": {
+      "title": "Load LaMa prefill model"
+    },
+    "class_type": "INPAINT_LoadInpaintModel",
+    "inputs": {
+      "model_name": "big-lama.pt"
+    }
+  },
+  "11": {
+    "_meta": {
+      "title": "LaMa prompt-free prefill"
+    },
+    "class_type": "INPAINT_InpaintWithModel",
+    "inputs": {
+      "inpaint_model": [
+        "10",
+        0
+      ],
+      "mask": [
+        "9",
+        1
+      ],
+      "image": [
+        "9",
+        0
+      ],
+      "seed": 123456789
+    }
+  },
+  "12": {
+    "_meta": {
+      "title": "LaMa prefill crop"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "11",
+        0
+      ]
+    }
+  },
+  "13": {
+    "_meta": {
+      "title": "LaMa enabled"
+    },
+    "class_type": "PrimitiveBoolean",
+    "inputs": {
+      "value": true
+    }
+  },
+  "14": {
+    "_meta": {
+      "title": "Use LaMa prefill (true) / original crop (false)"
+    },
+    "class_type": "ImpactSwitch",
+    "inputs": {
+      "input2": [
+        "9",
+        0
+      ],
+      "select": 1,
+      "sel_mode": [
+        "13",
+        0
+      ],
+      "input1": [
+        "11",
+        0
+      ]
+    }
+  },
+  "15": {
+    "_meta": {
+      "title": "Load SDXL Base 1.0 checkpoint"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "sd_xl_base_1.0.safetensors"
+    }
+  },
+  "16": {
+    "_meta": {
+      "title": "Positive repair prompt"
+    },
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "restore the physically damaged area of this original photograph, reconstruct the missing photographic content from the surrounding context, preserve the same people, facial identity, age, pose, clothing, background, lighting, grain, focus, colour and historical photographic style, seamless natural repair, realistic continuous texture",
+      "clip": [
+        "15",
+        1
+      ]
+    }
+  },
+  "17": {
+    "_meta": {
+      "title": "Negative repair prompt"
+    },
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "different person, changed face, beautified face, younger face, older face, altered expression, changed clothing, added objects, removed objects, modern details, illustration, painting, plastic skin, excessive sharpness, artificial texture, hallucinated detail, text, watermark, border, frame, colour shift, oversaturated",
+      "clip": [
+        "15",
+        1
+      ]
+    }
+  },
+  "18": {
+    "_meta": {
+      "title": "Load Fooocus Inpaint v2.6"
+    },
+    "class_type": "INPAINT_LoadFooocusInpaint",
+    "inputs": {
+      "patch": "inpaint_v26.fooocus.patch",
+      "head": "fooocus_inpaint_head.pth"
+    }
+  },
+  "19": {
+    "_meta": {
+      "title": "VAE Encode & Inpaint Conditioning"
+    },
+    "class_type": "INPAINT_VAEEncodeInpaintConditioning",
+    "inputs": {
+      "vae": [
+        "15",
+        2
+      ],
+      "negative": [
+        "17",
+        0
+      ],
+      "mask": [
+        "9",
+        1
+      ],
+      "positive": [
+        "16",
+        0
+      ],
+      "pixels": [
+        "14",
+        0
+      ]
+    }
+  },
+  "20": {
+    "_meta": {
+      "title": "Apply Fooocus Inpaint"
+    },
+    "class_type": "INPAINT_ApplyFooocusInpaint",
+    "inputs": {
+      "model": [
+        "15",
+        0
+      ],
+      "latent": [
+        "19",
+        2
+      ],
+      "patch": [
+        "18",
+        0
+      ]
+    }
+  },
+  "21": {
+    "_meta": {
+      "title": "Conservative SDXL inpaint sampler"
+    },
+    "class_type": "KSampler",
+    "inputs": {
+      "denoise": 0.7,
+      "latent_image": [
+        "19",
+        3
+      ],
+      "steps": 24,
+      "sampler_name": "dpmpp_2m_sde",
+      "seed": 123456789,
+      "negative": [
+        "19",
+        1
+      ],
+      "cfg": 4.5,
+      "model": [
+        "20",
+        0
+      ],
+      "scheduler": "karras",
+      "positive": [
+        "19",
+        0
+      ]
+    }
+  },
+  "22": {
+    "_meta": {
+      "title": "Decode repaired crop"
+    },
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "21",
+        0
+      ],
+      "vae": [
+        "15",
+        2
+      ]
+    }
+  },
+  "23": {
+    "_meta": {
+      "title": "Fooocus repaired crop"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "22",
+        0
+      ]
+    }
+  },
+  "24": {
+    "_meta": {
+      "title": "Conservative composite mask"
+    },
+    "class_type": "INPAINT_ShrinkMask",
+    "inputs": {
+      "shrink": 5,
+      "blur_type": "gaussian",
+      "mask": [
+        "9",
+        1
+      ],
+      "blur": 6
+    }
+  },
+  "25": {
+    "_meta": {
+      "title": "Composite mask preview"
+    },
+    "class_type": "MaskToImage",
+    "inputs": {
+      "mask": [
+        "24",
+        0
+      ]
+    }
+  },
+  "26": {
+    "_meta": {
+      "title": "Conservative composite mask"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "25",
+        0
+      ]
+    }
+  },
+  "27": {
+    "_meta": {
+      "title": "Composite repaired crop into original"
+    },
+    "class_type": "ImageUncropByMask",
+    "inputs": {
+      "destination": [
+        "1",
+        0
+      ],
+      "source": [
+        "22",
+        0
+      ],
+      "bbox": [
+        "9",
+        2
+      ],
+      "mask": [
+        "24",
+        0
+      ]
+    }
+  },
+  "28": {
+    "_meta": {
+      "title": "Final full-resolution composite"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "27",
+        0
+      ]
+    }
+  },
+  "29": {
+    "_meta": {
+      "title": "Save final composite"
+    },
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "27",
+        0
+      ],
+      "filename_prefix": "physical_repair_"
+    }
+  }
+}

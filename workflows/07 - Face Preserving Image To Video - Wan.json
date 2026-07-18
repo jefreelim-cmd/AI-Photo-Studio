@@ -1,0 +1,965 @@
+{
+  "id": "4d4c54f1-a536-4526-b8de-926617db7061",
+  "revision": 0,
+  "last_node_id": 11,
+  "last_link_id": 32,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        -1040,
+        -120
+      ],
+      "size": [
+        300,
+        320
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": [
+              "image",
+              "Input"
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            20
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "title": "1. Upload source image",
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "Original.jpg",
+        "image"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "WanVideoModelLoader",
+      "pos": [
+        -1040,
+        260
+      ],
+      "size": [
+        330,
+        180
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "model"
+          }
+        },
+        {
+          "name": "base_precision",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "base_precision"
+          }
+        },
+        {
+          "name": "quantization",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "quantization"
+          }
+        },
+        {
+          "name": "load_device",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "load_device"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "WANVIDEOMODEL",
+          "type": "WANVIDEOMODEL",
+          "links": [
+            23,
+            25
+          ]
+        }
+      ],
+      "title": "2. Wan 2.2 image-to-video model",
+      "properties": {
+        "Node name for S&R": "WanVideoModelLoader"
+      },
+      "widgets_values": [
+        "wan2.2_ti2v_5B_fp16.safetensors",
+        "fp16",
+        "disabled",
+        "offload_device"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "WanVideoVAELoader",
+      "pos": [
+        -1040,
+        500
+      ],
+      "size": [
+        330,
+        160
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "model_name"
+          }
+        },
+        {
+          "name": "precision",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "precision"
+          }
+        },
+        {
+          "name": "use_cpu_cache",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "use_cpu_cache"
+          }
+        },
+        {
+          "name": "verbose",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "verbose"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "WANVAE",
+          "type": "WANVAE",
+          "links": [
+            21,
+            22,
+            26
+          ]
+        }
+      ],
+      "title": "3. Wan 2.2 VAE",
+      "properties": {
+        "Node name for S&R": "WanVideoVAELoader"
+      },
+      "widgets_values": [
+        "wan2.2_vae.safetensors",
+        "bf16",
+        false,
+        false
+      ]
+    },
+    {
+      "id": 4,
+      "type": "LoadWanVideoT5TextEncoder",
+      "pos": [
+        -650,
+        260
+      ],
+      "size": [
+        320,
+        130
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "model_name"
+          }
+        },
+        {
+          "name": "precision",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "precision"
+          }
+        },
+        {
+          "name": "load_device",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "load_device"
+          }
+        },
+        {
+          "name": "quantization",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "quantization"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "WANTEXTENCODER",
+          "type": "WANTEXTENCODER",
+          "links": [
+            24
+          ]
+        }
+      ],
+      "title": "4. Wan T5 encoder",
+      "properties": {
+        "Node name for S&R": "LoadWanVideoT5TextEncoder"
+      },
+      "widgets_values": [
+        "nsfw_wan_umt5-xxl_fp8_scaled.safetensors",
+        "bf16",
+        "offload_device",
+        "disabled"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "WanVideoTextEncode",
+      "pos": [
+        -650,
+        -100
+      ],
+      "size": [
+        390,
+        300
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "positive_prompt",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "positive_prompt"
+          }
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "negative_prompt"
+          }
+        },
+        {
+          "name": "t5",
+          "type": "WANTEXTENCODER",
+          "link": 24
+        },
+        {
+          "name": "force_offload",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "force_offload"
+          }
+        },
+        {
+          "name": "model_to_offload",
+          "type": "WANVIDEOMODEL",
+          "link": 25
+        },
+        {
+          "name": "device",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "device"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "WANVIDEOTEXTEMBEDS",
+          "type": "WANVIDEOTEXTEMBEDS",
+          "links": [
+            27
+          ]
+        }
+      ],
+      "title": "5. Face-preserving motion prompt",
+      "properties": {
+        "Node name for S&R": "WanVideoTextEncode"
+      },
+      "widgets_values": [
+        "A subtle, photorealistic image-to-video shot based on the supplied source photograph. Preserve every person's exact identity, face, facial structure, age, skin tone, hairstyle, clothing, body proportions, and natural likeness throughout the entire clip. Keep the initial composition and scene consistent. Add only gentle realistic motion: natural blinking, small head movement, relaxed breathing, slight fabric and background movement, and a very slow stable camera drift. Maintain consistent lighting, perspective, photographic texture, and temporal coherence.",
+        "different person, changed face, face swap, facial distortion, identity drift, de-aged face, beautified face, warped hands, extra limbs, flicker, frame-to-frame inconsistency, camera shake, text, watermark, cartoon, CGI, painting, blur",
+        true,
+        true,
+        "gpu"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "PrimitiveInt",
+      "pos": [
+        -620,
+        510
+      ],
+      "size": [
+        260,
+        80
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "value",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "value"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            28
+          ]
+        }
+      ],
+      "title": "Video duration (seconds)",
+      "properties": {
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        5
+      ]
+    },
+    {
+      "id": 7,
+      "type": "MathExpression|pysssss",
+      "pos": [
+        -320,
+        510
+      ],
+      "size": [
+        280,
+        100
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "expression",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "expression"
+          }
+        },
+        {
+          "name": "a",
+          "type": "*",
+          "link": 28
+        }
+      ],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            29
+          ]
+        },
+        {
+          "name": "FLOAT",
+          "type": "FLOAT",
+          "links": null
+        }
+      ],
+      "title": "Duration → frames (16 fps)",
+      "properties": {
+        "Node name for S&R": "MathExpression|pysssss"
+      },
+      "widgets_values": [
+        "a * 16 + 1"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "WanVideoImageToVideoEncode",
+      "pos": [
+        -250,
+        -100
+      ],
+      "size": [
+        330,
+        340
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "height"
+          }
+        },
+        {
+          "name": "num_frames",
+          "type": "INT",
+          "link": 29
+        },
+        {
+          "name": "noise_aug_strength",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "noise_aug_strength"
+          }
+        },
+        {
+          "name": "start_latent_strength",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "start_latent_strength"
+          }
+        },
+        {
+          "name": "end_latent_strength",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "end_latent_strength"
+          }
+        },
+        {
+          "name": "force_offload",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "force_offload"
+          }
+        },
+        {
+          "name": "vae",
+          "type": "WANVAE",
+          "link": 21
+        },
+        {
+          "name": "start_image",
+          "type": "IMAGE",
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "name": "WANVIDIMAGE_EMBEDS",
+          "type": "WANVIDIMAGE_EMBEDS",
+          "links": [
+            30
+          ]
+        }
+      ],
+      "title": "6. Encode image identity reference",
+      "properties": {
+        "Node name for S&R": "WanVideoImageToVideoEncode"
+      },
+      "widgets_values": [
+        480,
+        832,
+        0.02,
+        1.0,
+        1.0,
+        true
+      ]
+    },
+    {
+      "id": 9,
+      "type": "WanVideoSampler",
+      "pos": [
+        140,
+        -30
+      ],
+      "size": [
+        320,
+        300
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "WANVIDEOMODEL",
+          "link": 23
+        },
+        {
+          "name": "image_embeds",
+          "type": "WANVIDIMAGE_EMBEDS",
+          "link": 30
+        },
+        {
+          "name": "text_embeds",
+          "type": "WANVIDEOTEXTEMBEDS",
+          "link": 27
+        },
+        {
+          "name": "steps",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "steps"
+          }
+        },
+        {
+          "name": "cfg",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "cfg"
+          }
+        },
+        {
+          "name": "shift",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "shift"
+          }
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "seed"
+          }
+        },
+        {
+          "name": "force_offload",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "force_offload"
+          }
+        },
+        {
+          "name": "scheduler",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "scheduler"
+          }
+        },
+        {
+          "name": "riflex_freq_index",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "riflex_freq_index"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            31
+          ]
+        },
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": null
+        }
+      ],
+      "title": "7. Generate video",
+      "properties": {
+        "Node name for S&R": "WanVideoSampler"
+      },
+      "widgets_values": [
+        20,
+        5.0,
+        5.0,
+        123456789,
+        true,
+        "unipc",
+        0
+      ]
+    },
+    {
+      "id": 10,
+      "type": "WanVideoDecode",
+      "pos": [
+        520,
+        -20
+      ],
+      "size": [
+        300,
+        240
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "vae",
+          "type": "WANVAE",
+          "link": 22
+        },
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 31
+        },
+        {
+          "name": "enable_vae_tiling",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "enable_vae_tiling"
+          }
+        },
+        {
+          "name": "tile_x",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "tile_x"
+          }
+        },
+        {
+          "name": "tile_y",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "tile_y"
+          }
+        },
+        {
+          "name": "tile_stride_x",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "tile_stride_x"
+          }
+        },
+        {
+          "name": "tile_stride_y",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "tile_stride_y"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            32
+          ]
+        }
+      ],
+      "title": "8. Decode frames",
+      "properties": {
+        "Node name for S&R": "WanVideoDecode"
+      },
+      "widgets_values": [
+        false,
+        272,
+        272,
+        144,
+        128
+      ]
+    },
+    {
+      "id": 11,
+      "type": "VHS_VideoCombine",
+      "pos": [
+        880,
+        -20
+      ],
+      "size": [
+        320,
+        270
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 32
+        },
+        {
+          "name": "frame_rate",
+          "type": "FLOAT",
+          "link": null,
+          "widget": {
+            "name": "frame_rate"
+          }
+        },
+        {
+          "name": "loop_count",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "loop_count"
+          }
+        },
+        {
+          "name": "filename_prefix",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "filename_prefix"
+          }
+        },
+        {
+          "name": "format",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "format"
+          }
+        },
+        {
+          "name": "pingpong",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "pingpong"
+          }
+        },
+        {
+          "name": "save_output",
+          "type": "BOOLEAN",
+          "link": null,
+          "widget": {
+            "name": "save_output"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "VHS_FILENAMES",
+          "type": "VHS_FILENAMES",
+          "links": null
+        }
+      ],
+      "title": "9. Save MP4 video",
+      "properties": {
+        "Node name for S&R": "VHS_VideoCombine"
+      },
+      "widgets_values": [
+        16,
+        0,
+        "face_preserving_video",
+        "video/h264-mp4",
+        false,
+        true
+      ]
+    }
+  ],
+  "links": [
+    [
+      20,
+      1,
+      0,
+      8,
+      8,
+      "IMAGE"
+    ],
+    [
+      21,
+      3,
+      0,
+      8,
+      7,
+      "WANVAE"
+    ],
+    [
+      22,
+      3,
+      0,
+      10,
+      0,
+      "WANVAE"
+    ],
+    [
+      23,
+      2,
+      0,
+      9,
+      0,
+      "WANVIDEOMODEL"
+    ],
+    [
+      24,
+      4,
+      0,
+      5,
+      2,
+      "WANTEXTENCODER"
+    ],
+    [
+      25,
+      2,
+      0,
+      5,
+      4,
+      "WANVIDEOMODEL"
+    ],
+    [
+      26,
+      3,
+      0,
+      8,
+      7,
+      "WANVAE"
+    ],
+    [
+      27,
+      5,
+      0,
+      9,
+      2,
+      "WANVIDEOTEXTEMBEDS"
+    ],
+    [
+      28,
+      6,
+      0,
+      7,
+      1,
+      "INT"
+    ],
+    [
+      29,
+      7,
+      0,
+      8,
+      2,
+      "INT"
+    ],
+    [
+      30,
+      8,
+      0,
+      9,
+      1,
+      "WANVIDIMAGE_EMBEDS"
+    ],
+    [
+      31,
+      9,
+      0,
+      10,
+      1,
+      "LATENT"
+    ],
+    [
+      32,
+      10,
+      0,
+      11,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Upload and choose duration",
+      "bounding": [
+        -1070,
+        -160,
+        780,
+        840
+      ],
+      "color": "#3f789e",
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "Face-preserving Wan image-to-video generation",
+      "bounding": [
+        -680,
+        -140,
+        1510,
+        500
+      ],
+      "color": "#3f789e",
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "frontendVersion": "1.26.11"
+  },
+  "version": 0.4
+}

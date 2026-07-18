@@ -1,0 +1,347 @@
+{
+  "1": {
+    "_meta": {
+      "title": "Load Image — use Mask Editor"
+    },
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "Original.jpg"
+    }
+  },
+  "2": {
+    "_meta": {
+      "title": "Original image"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "1",
+        0
+      ]
+    }
+  },
+  "3": {
+    "_meta": {
+      "title": "Stabilize painted mask"
+    },
+    "class_type": "INPAINT_StabilizeMask",
+    "inputs": {
+      "epsilon": 0.01,
+      "mask": [
+        "1",
+        1
+      ]
+    }
+  },
+  "4": {
+    "_meta": {
+      "title": "Generation Mask — grow 8, blur 8"
+    },
+    "class_type": "INPAINT_ExpandMask",
+    "inputs": {
+      "blur": 8,
+      "grow": 8,
+      "mask": [
+        "3",
+        0
+      ],
+      "blur_type": "gaussian"
+    }
+  },
+  "5": {
+    "_meta": {
+      "title": "Original painted mask preview"
+    },
+    "class_type": "MaskToImage",
+    "inputs": {
+      "mask": [
+        "1",
+        1
+      ]
+    }
+  },
+  "6": {
+    "_meta": {
+      "title": "Original painted mask"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "5",
+        0
+      ]
+    }
+  },
+  "7": {
+    "_meta": {
+      "title": "Generation mask preview"
+    },
+    "class_type": "MaskToImage",
+    "inputs": {
+      "mask": [
+        "4",
+        0
+      ]
+    }
+  },
+  "8": {
+    "_meta": {
+      "title": "Expanded generation mask"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "7",
+        0
+      ]
+    }
+  },
+  "9": {
+    "_meta": {
+      "title": "Crop damage with 192 px context"
+    },
+    "class_type": "ImageCropByMaskAndResize",
+    "inputs": {
+      "min_crop_resolution": 384,
+      "padding": 384,
+      "base_resolution": 1024,
+      "mask": [
+        "4",
+        0
+      ],
+      "image": [
+        "1",
+        0
+      ],
+      "max_crop_resolution": 1024
+    }
+  },
+  "10": {
+    "class_type": "INPAINT_MaskedFill",
+    "inputs": {
+      "image": [
+        "9",
+        0
+      ],
+      "mask": [
+        "9",
+        1
+      ],
+      "fill": "telea",
+      "falloff": 8
+    },
+    "_meta": {
+      "title": "Local prefill (Telea)"
+    }
+  },
+  "14": {
+    "class_type": "InpaintModelConditioning",
+    "inputs": {
+      "positive": [
+        "16",
+        0
+      ],
+      "negative": [
+        "17",
+        0
+      ],
+      "vae": [
+        "15",
+        2
+      ],
+      "pixels": [
+        "10",
+        0
+      ],
+      "mask": [
+        "9",
+        1
+      ],
+      "noise_mask": true
+    },
+    "_meta": {
+      "title": "Standard SDXL masked conditioning"
+    }
+  },
+  "15": {
+    "_meta": {
+      "title": "Load SDXL Base 1.0 checkpoint"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "sd_xl_base_1.0.safetensors"
+    }
+  },
+  "16": {
+    "_meta": {
+      "title": "Positive repair prompt"
+    },
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "repair only the masked physical damage in this original photograph; infer the continuation from the immediately surrounding photograph; preserve all unmasked pixels exactly, including people, facial identity, age, pose, clothing, objects, background, lighting, grain, focus, colour and historical photographic style; seamless conservative restoration; continuous realistic texture; do not invent a new subject or object",
+      "clip": [
+        "15",
+        1
+      ]
+    }
+  },
+  "17": {
+    "_meta": {
+      "title": "Negative repair prompt"
+    },
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "different person, changed face, beautified face, younger face, older face, altered expression, changed clothing, added object, new vehicle, new furniture, new building, removed object, modern details, illustration, painting, plastic skin, excessive sharpness, artificial texture, hallucinated detail, text, watermark, border, frame, colour shift, oversaturated",
+      "clip": [
+        "15",
+        1
+      ]
+    }
+  },
+  "21": {
+    "_meta": {
+      "title": "Conservative SDXL inpaint sampler"
+    },
+    "class_type": "KSampler",
+    "inputs": {
+      "denoise": 0.48,
+      "latent_image": [
+        "14",
+        2
+      ],
+      "steps": 30,
+      "sampler_name": "dpmpp_2m_sde",
+      "seed": 123456789,
+      "negative": [
+        "14",
+        1
+      ],
+      "cfg": 4.0,
+      "model": [
+        "15",
+        0
+      ],
+      "scheduler": "karras",
+      "positive": [
+        "14",
+        0
+      ]
+    }
+  },
+  "22": {
+    "_meta": {
+      "title": "Decode repaired crop"
+    },
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "21",
+        0
+      ],
+      "vae": [
+        "15",
+        2
+      ]
+    }
+  },
+  "23": {
+    "_meta": {
+      "title": "Fooocus repaired crop"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "22",
+        0
+      ]
+    }
+  },
+  "24": {
+    "_meta": {
+      "title": "Conservative composite mask"
+    },
+    "class_type": "INPAINT_ShrinkMask",
+    "inputs": {
+      "shrink": 7,
+      "blur_type": "gaussian",
+      "mask": [
+        "9",
+        1
+      ],
+      "blur": 8
+    }
+  },
+  "25": {
+    "_meta": {
+      "title": "Composite mask preview"
+    },
+    "class_type": "MaskToImage",
+    "inputs": {
+      "mask": [
+        "24",
+        0
+      ]
+    }
+  },
+  "26": {
+    "_meta": {
+      "title": "Conservative composite mask"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "25",
+        0
+      ]
+    }
+  },
+  "27": {
+    "_meta": {
+      "title": "Composite repaired crop into original"
+    },
+    "class_type": "ImageUncropByMask",
+    "inputs": {
+      "destination": [
+        "1",
+        0
+      ],
+      "source": [
+        "22",
+        0
+      ],
+      "bbox": [
+        "9",
+        2
+      ],
+      "mask": [
+        "24",
+        0
+      ]
+    }
+  },
+  "28": {
+    "_meta": {
+      "title": "Final full-resolution composite"
+    },
+    "class_type": "PreviewImage",
+    "inputs": {
+      "images": [
+        "27",
+        0
+      ]
+    }
+  },
+  "29": {
+    "_meta": {
+      "title": "Save final composite"
+    },
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "27",
+        0
+      ],
+      "filename_prefix": "physical_repair_sdxl_"
+    }
+  }
+}

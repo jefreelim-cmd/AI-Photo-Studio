@@ -109,6 +109,20 @@ Workflows = @{
 
     }
 
+    GFPGAN = @{
+
+        Enabled = $true
+
+        Name = 'Face Restoration (GFPGAN)'
+
+        File = '08 - Face Restoration - GFPGAN.api.json'
+
+        Prefix = 'gfpgan'
+
+        StageFolder = '03 - GFPGAN'
+
+    }
+
     CodeFormer = @{
 
         Enabled = $true
@@ -136,6 +150,33 @@ Workflows = @{
         StageFolder = "04 - Upscale"
 
     }
+    HealDamage = @{
+
+        Enabled = $true
+
+        Name = "Photo Healing"
+
+        File = "04 - Photo Healing - Kontext.api.json"
+
+        Prefix = "heal_damage"
+
+        StageFolder = "04 - Heal Damage"
+
+    }
+
+    SceneRegenerate = @{
+
+        Enabled = $true
+
+        Name = "Scene Regeneration"
+
+        File = "05 - Scene Regeneration - Kontext.api.json"
+
+        Prefix = "scene_regeneration"
+
+        StageFolder = "05 - Scene Regeneration"
+
+    }
 
 }
 
@@ -157,6 +198,12 @@ Workflows = @{
         Portrait = @(
             "Kontext"
             "CodeFormer"
+        )
+
+        FullRestoreGFPGAN = @(
+            'Kontext'
+            'CCSR'
+            'GFPGAN'
         )
 
         FullRestore = @(
@@ -182,3 +229,4 @@ Workflows = @{
     }
 
 }
+

@@ -1,0 +1,282 @@
+{
+  "6": {
+    "inputs": {
+      "text": "Heal only the damaged and imperfect areas of this old black-and-white photograph while preserving the real people and the original photograph.\n\nRemove burn holes, scorch marks, water stains, mould, scratches, cracks, tears, dust, fingerprints, fading, blotches, and missing emulsion. Reconstruct damage with plausible grayscale photographic detail matching the surrounding image.\n\nPreserve every person's exact identity, facial structure, expression, age, hairstyle, clothing, body proportions, pose, composition, camera angle, framing, and perspective. Do not replace, regenerate, beautify, or alter faces.\n\nCorrect uneven exposure and restore natural grayscale tonal range, authentic grain, and archival photographic texture. The result must be a clean, professionally restored photograph, never a drawing, CGI render, or obviously AI-generated image.",
+      "clip": [
+        "38",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "B&W healing prompt"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "31",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "31": {
+    "inputs": {
+      "seed": 584667296588607,
+      "steps": 30,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 0.78,
+      "model": [
+        "192",
+        0
+      ],
+      "positive": [
+        "35",
+        0
+      ],
+      "negative": [
+        "135",
+        0
+      ],
+      "latent_image": [
+        "124",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "35": {
+    "inputs": {
+      "guidance": 2.5,
+      "conditioning": [
+        "177",
+        0
+      ]
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "37": {
+    "inputs": {
+      "unet_name": "flux1-dev-kontext_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "38": {
+    "inputs": {
+      "clip_name1": "t5\\t5xxl_fp8_e4m3fn.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "DualCLIPLoader"
+    }
+  },
+  "39": {
+    "inputs": {
+      "vae_name": "FLUX1\\ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "42": {
+    "inputs": {
+      "image": [
+        "196",
+        0
+      ]
+    },
+    "class_type": "FluxKontextImageScale",
+    "_meta": {
+      "title": "FluxKontextImageScale"
+    }
+  },
+  "124": {
+    "inputs": {
+      "pixels": [
+        "42",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "135": {
+    "inputs": {
+      "conditioning": [
+        "239",
+        0
+      ]
+    },
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "ConditioningZeroOut"
+    }
+  },
+  "136": {
+    "inputs": {
+      "filename_prefix": "heal_damage",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "173": {
+    "inputs": {
+      "images": [
+        "42",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "177": {
+    "inputs": {
+      "conditioning": [
+        "239",
+        0
+      ],
+      "latent": [
+        "124",
+        0
+      ]
+    },
+    "class_type": "ReferenceLatent",
+    "_meta": {
+      "title": "ReferenceLatent"
+    }
+  },
+  "192": {
+    "inputs": {
+      "lora_name": "F.1_realistic_HDR_v1.safetensors",
+      "strength_model": 1,
+      "model": [
+        "37",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "194": {
+    "inputs": {
+      "text": "Heal only the damaged and imperfect areas of this old photograph while preserving the real people and the original photograph.\n\nRemove burn holes, scorch marks, water stains, mould, scratches, cracks, tears, dust, fingerprints, fading, blotches, discoloration, and missing emulsion. Reconstruct damaged background, clothing, hair, skin, and objects with plausible photographic detail that matches the surrounding image.\n\nPreserve the exact identity, facial structure, expression, age, hairstyle, skin tone, clothing, body proportions, pose, composition, camera angle, framing, and perspective of every person. Do not replace, regenerate, beautify, or alter faces.\n\nCorrect uneven exposure, colour casts, faded highlights, and crushed shadows with natural lighting and faithful realistic colours. Keep the original era, lens character, grain, and photographic texture. The result must be a clean, professionally restored photograph, never a painting, CGI render, or obviously AI-generated image.",
+      "clip": [
+        "38",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Colour healing prompt"
+    }
+  },
+  "196": {
+    "inputs": {
+      "image": "Original.jpg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "213": {
+    "inputs": {
+      "value": false
+    },
+    "class_type": "PrimitiveBoolean",
+    "_meta": {
+      "title": "Colorize"
+    }
+  },
+  "217": {
+    "inputs": {
+      "rgthree_comparer": {
+        "images": [
+          {
+            "name": "A",
+            "selected": true,
+            "url": "/api/view?filename=rgthree.compare._temp_nrivq_00003_.png&type=temp&subfolder=&rand=0.8271109138629275"
+          },
+          {
+            "name": "B",
+            "selected": true,
+            "url": "/api/view?filename=rgthree.compare._temp_nrivq_00004_.png&type=temp&subfolder=&rand=0.5150821449297736"
+          }
+        ]
+      },
+      "image_a": [
+        "42",
+        0
+      ],
+      "image_b": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "Image Comparer (rgthree)",
+    "_meta": {
+      "title": "Image Comparer (rgthree)"
+    }
+  },
+  "239": {
+    "inputs": {
+      "select": 1,
+      "sel_mode": [
+        "213",
+        0
+      ],
+      "input1": [
+        "194",
+        0
+      ],
+      "input2": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "ImpactSwitch",
+    "_meta": {
+      "title": "Switch (Any)"
+    }
+  }
+}
