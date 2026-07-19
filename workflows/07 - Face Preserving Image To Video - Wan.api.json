@@ -36,7 +36,7 @@
     "inputs": {
       "precision": "bf16",
       "load_device": "offload_device",
-      "model_name": "nsfw_wan_umt5-xxl_fp8_scaled.safetensors",
+      "model_name": "umt5-xxl-enc-bf16.safetensors",
       "quantization": "disabled"
     },
     "_meta": {
@@ -88,29 +88,26 @@
   },
   "8": {
     "inputs": {
-      "height": 832,
       "vae": [
         "3",
         0
       ],
-      "width": 480,
-      "force_offload": true,
-      "start_latent_strength": 1.0,
-      "num_frames": [
-        "7",
+      "image": [
+        "13",
         0
       ],
+      "enable_vae_tiling": false,
+      "tile_x": 272,
+      "tile_y": 272,
+      "tile_stride_x": 144,
+      "tile_stride_y": 128,
       "noise_aug_strength": 0.02,
-      "start_image": [
-        "1",
-        0
-      ],
-      "end_latent_strength": 1.0
+      "latent_strength": 1.0
     },
+    "class_type": "WanVideoEncode",
     "_meta": {
-      "title": "Encode image reference"
-    },
-    "class_type": "WanVideoImageToVideoEncode"
+      "title": "Encode source image for Wan 5B"
+    }
   },
   "9": {
     "inputs": {
@@ -128,7 +125,7 @@
       "steps": 20,
       "cfg": 5.0,
       "image_embeds": [
-        "8",
+        "12",
         0
       ],
       "shift": 5.0,
@@ -177,5 +174,39 @@
       "title": "Save MP4 video"
     },
     "class_type": "VHS_VideoCombine"
+  },
+  "12": {
+    "inputs": {
+      "extra_latents": [
+        "8",
+        0
+      ],
+      "width": 512,
+      "height": 640,
+      "num_frames": [
+        "7",
+        0
+      ]
+    },
+    "class_type": "WanVideoEmptyEmbeds",
+    "_meta": {
+      "title": "Build Wan 5B video latents"
+    }
+  },
+  "13": {
+    "inputs": {
+      "image": [
+        "1",
+        0
+      ],
+      "upscale_method": "lanczos",
+      "width": 512,
+      "height": 640,
+      "crop": "disabled"
+    },
+    "class_type": "ImageScale",
+    "_meta": {
+      "title": "Resize source photo (512 x 640)"
+    }
   }
 }

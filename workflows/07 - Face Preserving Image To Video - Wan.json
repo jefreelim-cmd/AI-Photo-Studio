@@ -255,7 +255,7 @@
         "Node name for S&R": "LoadWanVideoT5TextEncoder"
       },
       "widgets_values": [
-        "nsfw_wan_umt5-xxl_fp8_scaled.safetensors",
+        "umt5-xxl-enc-bf16.safetensors",
         "bf16",
         "offload_device",
         "disabled"
@@ -434,7 +434,7 @@
     },
     {
       "id": 8,
-      "type": "WanVideoImageToVideoEncode",
+      "type": "WanVideoEncode",
       "pos": [
         -250,
         -100
@@ -448,89 +448,112 @@
       "mode": 0,
       "inputs": [
         {
-          "name": "width",
-          "type": "INT",
-          "link": null,
-          "widget": {
-            "name": "width"
-          }
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "link": null,
-          "widget": {
-            "name": "height"
-          }
-        },
-        {
-          "name": "num_frames",
-          "type": "INT",
-          "link": 29
-        },
-        {
-          "name": "noise_aug_strength",
-          "type": "FLOAT",
-          "link": null,
-          "widget": {
-            "name": "noise_aug_strength"
-          }
-        },
-        {
-          "name": "start_latent_strength",
-          "type": "FLOAT",
-          "link": null,
-          "widget": {
-            "name": "start_latent_strength"
-          }
-        },
-        {
-          "name": "end_latent_strength",
-          "type": "FLOAT",
-          "link": null,
-          "widget": {
-            "name": "end_latent_strength"
-          }
-        },
-        {
-          "name": "force_offload",
-          "type": "BOOLEAN",
-          "link": null,
-          "widget": {
-            "name": "force_offload"
-          }
-        },
-        {
+          "localized_name": "vae",
           "name": "vae",
           "type": "WANVAE",
-          "link": 21
+          "link": 26
         },
         {
-          "name": "start_image",
+          "localized_name": "image",
+          "name": "image",
           "type": "IMAGE",
           "link": 20
+        },
+        {
+          "localized_name": "mask",
+          "name": "mask",
+          "shape": 7,
+          "type": "MASK",
+          "link": null
+        },
+        {
+          "localized_name": "enable_vae_tiling",
+          "name": "enable_vae_tiling",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "enable_vae_tiling"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "tile_x",
+          "name": "tile_x",
+          "type": "INT",
+          "widget": {
+            "name": "tile_x"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "tile_y",
+          "name": "tile_y",
+          "type": "INT",
+          "widget": {
+            "name": "tile_y"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "tile_stride_x",
+          "name": "tile_stride_x",
+          "type": "INT",
+          "widget": {
+            "name": "tile_stride_x"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "tile_stride_y",
+          "name": "tile_stride_y",
+          "type": "INT",
+          "widget": {
+            "name": "tile_stride_y"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "noise_aug_strength",
+          "name": "noise_aug_strength",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "noise_aug_strength"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "latent_strength",
+          "name": "latent_strength",
+          "shape": 7,
+          "type": "FLOAT",
+          "widget": {
+            "name": "latent_strength"
+          },
+          "link": null
         }
       ],
       "outputs": [
         {
-          "name": "WANVIDIMAGE_EMBEDS",
-          "type": "WANVIDIMAGE_EMBEDS",
+          "localized_name": "samples",
+          "name": "samples",
+          "type": "LATENT",
           "links": [
-            30
+            33
           ]
         }
       ],
-      "title": "6. Encode image identity reference",
+      "title": "6. Encode source image for Wan 5B",
       "properties": {
         "Node name for S&R": "WanVideoImageToVideoEncode"
       },
       "widgets_values": [
-        480,
-        832,
+        false,
+        272,
+        272,
+        144,
+        128,
         0.02,
-        1.0,
-        1.0,
-        true
+        1.0
       ]
     },
     {
@@ -823,24 +846,172 @@
         false,
         true
       ]
+    },
+    {
+      "id": 12,
+      "type": "WanVideoEmptyEmbeds",
+      "pos": [
+        805,
+        215
+      ],
+      "size": [
+        300,
+        150
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "control_embeds",
+          "name": "control_embeds",
+          "shape": 7,
+          "type": "WANVIDIMAGE_EMBEDS",
+          "link": null
+        },
+        {
+          "localized_name": "extra_latents",
+          "name": "extra_latents",
+          "shape": 7,
+          "type": "LATENT",
+          "link": 33
+        },
+        {
+          "localized_name": "width",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "num_frames",
+          "name": "num_frames",
+          "type": "INT",
+          "widget": {
+            "name": "num_frames"
+          },
+          "link": 29
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "image_embeds",
+          "name": "image_embeds",
+          "type": "WANVIDIMAGE_EMBEDS",
+          "links": [
+            30
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoEmptyEmbeds"
+      },
+      "widgets_values": [
+        512,
+        640,
+        81
+      ],
+      "title": "6b. Build Wan 5B video latents"
+    },
+    {
+      "id": 13,
+      "type": "ImageScale",
+      "pos": [
+        355,
+        355
+      ],
+      "size": [
+        260,
+        180
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "image",
+          "name": "image",
+          "type": "IMAGE",
+          "link": 34
+        },
+        {
+          "localized_name": "upscale_method",
+          "name": "upscale_method",
+          "type": "COMBO",
+          "widget": {
+            "name": "upscale_method"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "width",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "crop",
+          "name": "crop",
+          "type": "COMBO",
+          "widget": {
+            "name": "crop"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            20
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ImageScale"
+      },
+      "widgets_values": [
+        "lanczos",
+        512,
+        640,
+        "disabled"
+      ],
+      "title": "Resize source photo (512 × 640)"
     }
   ],
   "links": [
     [
       20,
+      13,
+      0,
+      8,
       1,
-      0,
-      8,
-      8,
       "IMAGE"
-    ],
-    [
-      21,
-      3,
-      0,
-      8,
-      7,
-      "WANVAE"
     ],
     [
       22,
@@ -879,7 +1050,7 @@
       3,
       0,
       8,
-      7,
+      0,
       "WANVAE"
     ],
     [
@@ -902,17 +1073,9 @@
       29,
       7,
       0,
-      8,
-      2,
+      12,
+      4,
       "INT"
-    ],
-    [
-      30,
-      8,
-      0,
-      9,
-      1,
-      "WANVIDIMAGE_EMBEDS"
     ],
     [
       31,
@@ -927,6 +1090,30 @@
       10,
       0,
       11,
+      0,
+      "IMAGE"
+    ],
+    [
+      30,
+      12,
+      0,
+      9,
+      1,
+      "WANVIDIMAGE_EMBEDS"
+    ],
+    [
+      33,
+      8,
+      0,
+      12,
+      1,
+      "LATENT"
+    ],
+    [
+      34,
+      1,
+      0,
+      13,
       0,
       "IMAGE"
     ]
