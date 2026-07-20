@@ -35,9 +35,9 @@
       "cfg": 1,
       "sampler_name": "euler",
       "scheduler": "simple",
-      "denoise": 0.88,
+      "denoise": 0.42,
       "model": [
-        "192",
+        "37",
         0
       ],
       "positive": [
@@ -187,10 +187,7 @@
     "inputs": {
       "lora_name": "F.1_realistic_HDR_v1.safetensors",
       "strength_model": 1,
-      "model": [
-        "37",
-        0
-      ]
+      "model": null
     },
     "class_type": "LoraLoaderModelOnly",
     "_meta": {
@@ -199,7 +196,7 @@
   },
   "194": {
     "inputs": {
-      "text": "Using the supplied photograph as the identity reference, create a photorealistic new scene from this instruction: [DESCRIBE THE NEW BACKGROUND, CLOTHING, SETTING, LIGHTING, AND MOOD HERE].\n\nKeep every person instantly recognizable: preserve their exact facial identity, facial structure, expression, age, hairstyle, skin tone, body proportions, and natural likeness. Do not substitute a different person, alter facial features, de-age, beautify, or create a generic face.\n\nYou may regenerate the background, surroundings, clothing, props, and scene only as requested. Keep a natural pose and coherent perspective; match light direction, shadows, lens perspective, depth of field, and colour across the whole image. Produce an authentic high-resolution photograph with realistic skin texture, fabric, and environment detail. Never create a painting, illustration, CGI render, or obvious AI artefacts.",
+      "text": "Using the supplied photograph as the identity and composition reference, carefully edit it into a photorealistic family portrait at a beach resort in Boracay, Philippines. Replace the indoor room, curtains, table, and wires with pale sand, ocean, palm trees, tasteful resort architecture, and warm late-afternoon light. Change the existing clothing to coordinated modern neutral-beige resort clothing for the men and elegant neutral-beige dresses for the women.\n\nPreserve every one of the original seven people, their exact faces, apparent age, hairstyle, skin tone, body proportions, relative positions, and current pose. Do not add, remove, merge, replace, reposition, or make people stand if they are seated in the source photograph. Do not alter or beautify any face. Keep the group arrangement and perspective intact. Produce natural photographic detail with realistic shadows, fabric, skin texture, and perspective. No illustration, CGI, text, watermark, or AI artefacts.",
       "clip": [
         "38",
         0
@@ -221,11 +218,11 @@
   },
   "213": {
     "inputs": {
-      "value": false
+      "value": true
     },
     "class_type": "PrimitiveBoolean",
     "_meta": {
-      "title": "Colorize"
+      "title": "Use Scene Prompt (leave enabled)"
     }
   },
   "217": {
@@ -277,6 +274,17 @@
     "class_type": "ImpactSwitch",
     "_meta": {
       "title": "Switch (Any)"
+    }
+  },
+  "237": {
+    "inputs": {
+      "width": 1392,
+      "height": 752,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "Not used — preservation mode uses the source latent"
     }
   }
 }

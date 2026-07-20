@@ -460,7 +460,7 @@
         1,
         "euler",
         "simple",
-        0.88
+        0.42
       ],
       "color": "#323",
       "bgcolor": "#535"
@@ -501,8 +501,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            343,
-            344
+            343
           ]
         }
       ],
@@ -712,7 +711,7 @@
         ]
       },
       "widgets_values": [
-        "flux1-kontext-dev.safetensors",
+        "flux1-dev-kontext_fp8_scaled.safetensors",
         "default"
       ],
       "color": "#322",
@@ -744,7 +743,7 @@
           "name": "",
           "type": "MODEL",
           "links": [
-            371
+            342
           ]
         }
       ],
@@ -840,7 +839,7 @@
           "localized_name": "model",
           "name": "model",
           "type": "MODEL",
-          "link": 371
+          "link": null
         },
         {
           "localized_name": "lora_name",
@@ -866,9 +865,7 @@
           "localized_name": "MODEL",
           "name": "MODEL",
           "type": "MODEL",
-          "links": [
-            342
-          ]
+          "links": []
         }
       ],
       "properties": {
@@ -901,7 +898,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "Select between fp8/16 or GGUF models.\nFor GGUF, activate and reconnect.\nIf you do not want to use the Lora, deactivate it.\nIf active, it needs HDR as keyword"
+        "Preservation-first mode: context model only. The LoRA is disconnected. Source latent + 0.42 denoise retains the original people; use only prompts that preserve their pose and arrangement."
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -1035,7 +1032,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "Using the supplied photograph as the identity reference, create a photorealistic new scene from this instruction: [DESCRIBE THE NEW BACKGROUND, CLOTHING, SETTING, LIGHTING, AND MOOD HERE].\n\nKeep every person instantly recognizable: preserve their exact facial identity, facial structure, expression, age, hairstyle, skin tone, body proportions, and natural likeness. Do not substitute a different person, alter facial features, de-age, beautify, or create a generic face.\n\nYou may regenerate the background, surroundings, clothing, props, and scene only as requested. Keep a natural pose and coherent perspective; match light direction, shadows, lens perspective, depth of field, and colour across the whole image. Produce an authentic high-resolution photograph with realistic skin texture, fabric, and environment detail. Never create a painting, illustration, CGI render, or obvious AI artefacts."
+        "Using the supplied photograph as the identity and composition reference, carefully edit it into a photorealistic family portrait at a beach resort in Boracay, Philippines. Replace the indoor room, curtains, table, and wires with pale sand, ocean, palm trees, tasteful resort architecture, and warm late-afternoon light. Change the existing clothing to coordinated modern neutral-beige resort clothing for the men and elegant neutral-beige dresses for the women.\n\nPreserve every one of the original seven people, their exact faces, apparent age, hairstyle, skin tone, body proportions, relative positions, and current pose. Do not add, remove, merge, replace, reposition, or make people stand if they are seated in the source photograph. Do not alter or beautify any face. Keep the group arrangement and perspective intact. Produce natural photographic detail with realistic shadows, fabric, skin texture, and perspective. No illustration, CGI, text, watermark, or AI artefacts."
       ],
       "color": "#232",
       "bgcolor": "#353"
@@ -1112,7 +1109,7 @@
       "outputs": [],
       "properties": {},
       "widgets_values": [
-        "Edit the Scene prompt node, then queue. Set true only to use the alternate prompt."
+        "Edit the Scene prompt node, keep “Use Scene Prompt” enabled, then queue. Disable it only when you intentionally want the generic alternate prompt."
       ],
       "color": "#432",
       "bgcolor": "#653"
@@ -1269,15 +1266,81 @@
           ]
         }
       ],
-      "title": "Use alternate prompt",
+      "title": "Use Scene Prompt (leave enabled)",
       "properties": {
         "cnr_id": "comfy-core",
         "ver": "0.3.57",
         "Node name for S&R": "PrimitiveBoolean"
       },
       "widgets_values": [
-        false
+        true
       ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 237,
+      "type": "EmptySD3LatentImage",
+      "pos": [
+        856,
+        -625
+      ],
+      "size": [
+        260,
+        106
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "width",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "batch_size",
+          "name": "batch_size",
+          "type": "INT",
+          "widget": {
+            "name": "batch_size"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            344
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptySD3LatentImage",
+        "cnr_id": "comfy-core"
+      },
+      "widgets_values": [
+        1392,
+        752,
+        1
+      ],
+      "title": "Not used — preservation mode uses the source latent",
       "color": "#323",
       "bgcolor": "#535"
     }
@@ -1357,7 +1420,7 @@
     ],
     [
       342,
-      192,
+      235,
       0,
       31,
       0,
@@ -1450,14 +1513,6 @@
       235,
       0,
       "*"
-    ],
-    [
-      371,
-      235,
-      0,
-      192,
-      0,
-      "MODEL"
     ],
     [
       372,

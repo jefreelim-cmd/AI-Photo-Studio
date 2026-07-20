@@ -1,0 +1,244 @@
+{
+  "6": {
+    "inputs": {
+      "text": "Do not change any unmasked person, face, hair, skin, hands, body, pose, number of people, or composition. No face replacement, no missing people, no extra people, no cartoon, CGI, text, watermark, or artefacts.",
+      "clip": [
+        "38",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Alternate scene prompt"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "31",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "31": {
+    "inputs": {
+      "scheduler": "simple",
+      "model": [
+        "37",
+        0
+      ],
+      "sampler_name": "euler",
+      "denoise": 1,
+      "seed": 42716609,
+      "steps": 28,
+      "positive": [
+        "35",
+        0
+      ],
+      "latent_image": [
+        "240",
+        2
+      ],
+      "cfg": 1,
+      "negative": [
+        "240",
+        1
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "35": {
+    "inputs": {
+      "conditioning": [
+        "240",
+        0
+      ],
+      "guidance": 3.5
+    },
+    "class_type": "FluxGuidance",
+    "_meta": {
+      "title": "FluxGuidance"
+    }
+  },
+  "37": {
+    "inputs": {
+      "unet_name": "flux1-fill-dev.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "Load Diffusion Model"
+    }
+  },
+  "38": {
+    "inputs": {
+      "clip_name1": "t5\\t5xxl_fp8_e4m3fn.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux",
+      "device": "default"
+    },
+    "class_type": "DualCLIPLoader",
+    "_meta": {
+      "title": "DualCLIPLoader"
+    }
+  },
+  "39": {
+    "inputs": {
+      "vae_name": "FLUX1\\ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "124": {
+    "inputs": {
+      "pixels": [
+        "42",
+        0
+      ],
+      "vae": [
+        "39",
+        0
+      ]
+    },
+    "class_type": "VAEEncode",
+    "_meta": {
+      "title": "VAE Encode"
+    }
+  },
+  "136": {
+    "inputs": {
+      "filename_prefix": "scene_regeneration",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "194": {
+    "inputs": {
+      "text": "Photorealistic edit of only the masked regions: transform the background into a beach resort in Boracay, Philippines, with pale sand, ocean, palm trees, tasteful resort architecture, and warm late-afternoon light. Where clothing is masked, change it to coordinated modern neutral-beige resort clothing. Keep all unmasked pixels exactly unchanged. Match the original photo's lighting, lens perspective, shadows, and realistic photographic detail.",
+      "clip": [
+        "38",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Scene prompt (edit this)"
+    }
+  },
+  "196": {
+    "inputs": {
+      "image": "Original.jpg"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "217": {
+    "inputs": {
+      "rgthree_comparer": {
+        "images": [
+          {
+            "name": "A",
+            "selected": true,
+            "url": "/api/view?filename=rgthree.compare._temp_nrivq_00003_.png&type=temp&subfolder=&rand=0.8271109138629275"
+          },
+          {
+            "name": "B",
+            "selected": true,
+            "url": "/api/view?filename=rgthree.compare._temp_nrivq_00004_.png&type=temp&subfolder=&rand=0.5150821449297736"
+          }
+        ]
+      },
+      "image_a": [
+        "42",
+        0
+      ],
+      "image_b": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "Image Comparer (rgthree)",
+    "_meta": {
+      "title": "Image Comparer (rgthree)"
+    }
+  },
+  "239": {
+    "class_type": "GrowMaskWithBlur",
+    "inputs": {
+      "tapered_corners": true,
+      "flip_input": false,
+      "expand": 12,
+      "blur_radius": 8,
+      "incremental_expandrate": 0,
+      "decay_factor": 1,
+      "lerp_alpha": 1,
+      "mask": [
+        "238",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Soften mask edge"
+    }
+  },
+  "240": {
+    "class_type": "InpaintModelConditioning",
+    "inputs": {
+      "vae": [
+        "39",
+        0
+      ],
+      "pixels": [
+        "196",
+        0
+      ],
+      "negative": [
+        "6",
+        0
+      ],
+      "positive": [
+        "194",
+        0
+      ],
+      "noise_mask": true,
+      "mask": [
+        "239",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Protect unmasked pixels"
+    }
+  },
+  "238": {
+    "class_type": "LoadImageMask",
+    "inputs": {
+      "channel": "red",
+      "image": "scene_edit_mask.png"
+    },
+    "_meta": {
+      "title": "Load black/white edit mask"
+    }
+  }
+}
