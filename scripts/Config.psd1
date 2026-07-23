@@ -258,7 +258,6 @@ Workflows = @{
             "AutomaticWatermarkRemoval"
             "CCSR"
             "CodeFormer"
-            "Upscale"
         )
 
     }

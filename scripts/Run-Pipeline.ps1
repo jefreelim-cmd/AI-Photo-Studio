@@ -123,6 +123,10 @@ if ($Images.Count -eq 0) {
 # Helper Functions
 ###########################################################################
 
+$DeferredCleanup = [System.Collections.Generic.HashSet[string]]::new(
+    [System.StringComparer]::OrdinalIgnoreCase
+)
+
 function Write-Log {
 
     param(
@@ -152,6 +156,167 @@ function Write-Log {
 
 }
 
+function Wait-FileUnlocked {
+
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [int]$TimeoutSeconds = 30,
+
+        [int]$PollMilliseconds = 500
+    )
+
+    $Deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+
+    do {
+
+        if (!(Test-Path -LiteralPath $Path)) {
+            return $true
+        }
+
+        try {
+
+            $Stream = [System.IO.File]::Open(
+                $Path,
+                [System.IO.FileMode]::Open,
+                [System.IO.FileAccess]::ReadWrite,
+                [System.IO.FileShare]::None
+            )
+
+            $Stream.Dispose()
+
+            return $true
+
+        }
+        catch [System.IO.IOException] {
+        }
+        catch [System.UnauthorizedAccessException] {
+        }
+
+        Start-Sleep -Milliseconds $PollMilliseconds
+
+    } while ((Get-Date) -lt $Deadline)
+
+    return $false
+
+}
+
+function Remove-FileWithRetry {
+
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [int]$TimeoutSeconds = 30
+    )
+
+    if (!(Test-Path -LiteralPath $Path)) {
+        return $true
+    }
+
+    if (!(Wait-FileUnlocked -Path $Path -TimeoutSeconds $TimeoutSeconds)) {
+        return $false
+    }
+
+    try {
+
+        Remove-Item `
+            -LiteralPath $Path `
+            -Force `
+            -ErrorAction Stop
+
+        return $true
+
+    }
+    catch [System.IO.IOException] {
+        return $false
+    }
+    catch [System.UnauthorizedAccessException] {
+        return $false
+    }
+
+}
+
+function Copy-FileWithRetry {
+
+    param(
+        [Parameter(Mandatory)]
+        [string]$Source,
+
+        [Parameter(Mandatory)]
+        [string]$Destination,
+
+        [int]$TimeoutSeconds = 30
+    )
+
+    $Deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $LastError = $null
+
+    do {
+
+        try {
+
+            Copy-Item `
+                -LiteralPath $Source `
+                -Destination $Destination `
+                -Force `
+                -ErrorAction Stop
+
+            return
+
+        }
+        catch [System.IO.IOException] {
+            $LastError = $_
+        }
+        catch [System.UnauthorizedAccessException] {
+            $LastError = $_
+        }
+
+        Start-Sleep -Milliseconds 500
+
+    } while ((Get-Date) -lt $Deadline)
+
+    throw "Unable to copy workflow output after $TimeoutSeconds seconds: $Source`n$($LastError.Exception.Message)"
+
+}
+
+function Add-DeferredCleanup {
+
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    if ($DeferredCleanup.Add($Path)) {
+        Write-Log ("Temporary output cleanup deferred: {0}" -f $Path)
+    }
+
+}
+
+function Retry-DeferredCleanup {
+
+    if ($DeferredCleanup.Count -eq 0) {
+        return
+    }
+
+    Write-Log ("Retrying {0} deferred cleanup item(s)..." -f $DeferredCleanup.Count)
+
+    foreach ($Path in @($DeferredCleanup)) {
+
+        if (Remove-FileWithRetry -Path $Path -TimeoutSeconds 10) {
+            [void]$DeferredCleanup.Remove($Path)
+            Write-Log ("Deferred cleanup completed: {0}" -f $Path)
+        }
+
+    }
+
+    foreach ($Path in $DeferredCleanup) {
+        Write-Log ("Deferred cleanup still locked; leaving file in place: {0}" -f $Path)
+    }
+
+}
+
 function Reset-Runtime {
 
     Write-Log "Resetting runtime folders..."
@@ -161,12 +326,20 @@ function Reset-Runtime {
     # Clear Runtime Output
     #######################################################################
 
-    Get-ChildItem `
-        -Path $OutputFolder `
-        -File `
-        -ErrorAction SilentlyContinue |
-    Remove-Item `
-        -Force
+    $RuntimeFiles = @(
+        Get-ChildItem `
+            -Path $OutputFolder `
+            -File `
+            -ErrorAction SilentlyContinue
+    )
+
+    foreach ($File in $RuntimeFiles) {
+
+        if (!(Remove-FileWithRetry -Path $File.FullName -TimeoutSeconds 10)) {
+            Add-DeferredCleanup -Path $File.FullName
+        }
+
+    }
 
     Write-Log "Runtime reset complete."
 
@@ -235,36 +408,25 @@ function Move-WorkflowOutput {
 
         if (Test-Path $Destination) {
 
-            Remove-Item `
-                -Path $Destination `
-                -Force
+            if (!(Remove-FileWithRetry -Path $Destination -TimeoutSeconds 30)) {
+                throw "Destination file is locked and cannot be replaced:`n$Destination"
+            }
 
         }
 
         #
         # Archive the generated output.
         #
-        Copy-Item `
-            -Path $File.FullPath `
+        Copy-FileWithRetry `
+            -Source $File.FullPath `
             -Destination $Destination `
-            -Force `
-            -ErrorAction Stop
+            -TimeoutSeconds 30
 
         #
         # Best-effort cleanup of the temporary ComfyUI output.
         #
-        try {
-
-            Remove-Item `
-                -Path $File.FullPath `
-                -Force `
-                -ErrorAction Stop
-
-        }
-        catch {
-
-            Write-Log ("Temporary output cleanup deferred: {0}" -f $File.FullPath)
-
+        if (!(Remove-FileWithRetry -Path $File.FullPath -TimeoutSeconds 30)) {
+            Add-DeferredCleanup -Path $File.FullPath
         }
 
         $MovedFiles += $Destination
@@ -292,6 +454,12 @@ Write-Log ("Started  : {0}" -f (Get-Date))
 
 $ImageNumber = 0
 
+###########################################################################
+# Prepare Runtime Once Per Batch
+###########################################################################
+
+Reset-Runtime
+
 foreach ($Image in $Images) {
 
     $ImageNumber++
@@ -306,12 +474,6 @@ $OriginalImage = $Image.FullName
 
 $CurrentImage = $OriginalImage
 
-
-###########################################################################
-# Prepare Runtime
-###########################################################################
-
-Reset-Runtime
 
 foreach ($WorkflowName in $PipelineStages) {
 
@@ -426,6 +588,8 @@ Write-Host ("Pipeline : {0}" -f $Pipeline)
 Write-Host ("Images   : {0}" -f $Images.Count)
 Write-Host ("Status   : Success")
 Write-Host ""
+
+Retry-DeferredCleanup
 
 Write-Log "====================================="
 Write-Log "Pipeline completed successfully."

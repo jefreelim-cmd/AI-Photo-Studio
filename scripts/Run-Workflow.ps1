@@ -202,6 +202,8 @@ $HistoryUrl = "{0}{1}/{2}" -f `
 Write-Host "Waiting for workflow completion..."
 
 $Completed = $false
+$HistoryEntry = $null
+$WorkflowFailure = $null
 
 while (-not $Completed) {
 
@@ -215,7 +217,36 @@ while (-not $Completed) {
 
         if ($History.PSObject.Properties.Name -contains $PromptId) {
 
-            $Completed = $true
+            $HistoryEntry = $History.PSObject.Properties[$PromptId].Value
+            $HasStatus = $HistoryEntry.PSObject.Properties.Name -contains "status"
+
+            if (
+                $HasStatus -and
+                $HistoryEntry.status.status_str -eq "error"
+            ) {
+
+                $ExecutionError = $HistoryEntry.status.messages |
+                    Where-Object {
+                        $_[0] -eq "execution_error"
+                    } |
+                    Select-Object -Last 1
+
+                if ($null -ne $ExecutionError) {
+                    $WorkflowFailure = "ComfyUI workflow failed:`n$($ExecutionError[1].exception_message)"
+                }
+                else {
+                    $WorkflowFailure = "ComfyUI workflow failed. Check the ComfyUI server log for details."
+                }
+
+                $Completed = $true
+
+            }
+            elseif (
+                $HasStatus -and
+                $HistoryEntry.status.completed -eq $true
+            ) {
+                $Completed = $true
+            }
 
         }
 
@@ -224,6 +255,10 @@ while (-not $Completed) {
 
         # Workflow still running
 
+    }
+
+    if ($null -ne $WorkflowFailure) {
+        throw $WorkflowFailure
     }
 
 }
@@ -238,43 +273,74 @@ Write-Host ""
 ###########################################################################
 # Detect Workflow Output
 #
-# ComfyUI does not reliably populate the History API outputs on our
-# installation. Detect generated images by scanning the runtime output
-# folder for files written during this workflow execution.
+# Use only the files returned for this exact prompt ID. This prevents stale
+# or concurrent files with the same workflow prefix from entering the
+# pipeline.
 ###########################################################################
-
-$ExpectedPrefix = "$($WorkflowConfig.Prefix)_"
-
-$NewFiles = @(
-    Get-ChildItem `
-        -Path $OutputFolder `
-        -Filter "$ExpectedPrefix*.png" `
-        -File |
-    Where-Object {
-        $_.LastWriteTime -ge $StartTime.AddSeconds(-1)
-    }
-)
-
-if ($NewFiles.Count -eq 0) {
-    throw "Workflow completed but no workflow output files were detected."
-}
 
 $OutputFiles = @()
 
-foreach ($File in $NewFiles) {
+if (
+    $HistoryEntry.PSObject.Properties.Name -contains "outputs" -and
+    $null -ne $HistoryEntry.outputs
+) {
 
-    $OutputFiles += [PSCustomObject]@{
+    foreach ($OutputNode in $HistoryEntry.outputs.PSObject.Properties) {
 
-        Filename  = $File.Name
+        if (
+            $OutputNode.Value.PSObject.Properties.Name -notcontains "images" -or
+            $null -eq $OutputNode.Value.images
+        ) {
+            continue
+        }
 
-        FullPath  = $File.FullName
+        foreach ($Image in $OutputNode.Value.images) {
 
-        Type      = "output"
+            if ($Image.type -ne "output") {
+                continue
+            }
 
-        Subfolder = ""
+            $OutputPath = $OutputFolder
+
+            if (![string]::IsNullOrWhiteSpace($Image.subfolder)) {
+                $OutputPath = Join-Path $OutputPath $Image.subfolder
+            }
+
+            $FullPath = Join-Path $OutputPath $Image.filename
+
+            $Deadline = (Get-Date).AddSeconds(30)
+
+            while (
+                !(Test-Path -LiteralPath $FullPath) -and
+                (Get-Date) -lt $Deadline
+            ) {
+                Start-Sleep -Milliseconds 500
+            }
+
+            if (!(Test-Path -LiteralPath $FullPath)) {
+                throw "ComfyUI reported an output file that did not appear on disk:`n$FullPath"
+            }
+
+            $OutputFiles += [PSCustomObject]@{
+
+                Filename  = $Image.filename
+
+                FullPath  = $FullPath
+
+                Type      = $Image.type
+
+                Subfolder = $Image.subfolder
+
+            }
+
+        }
 
     }
 
+}
+
+if ($OutputFiles.Count -eq 0) {
+    throw "Workflow completed successfully but its History API record contained no saved output images."
 }
 
 Write-Host "Generated Output(s)"
