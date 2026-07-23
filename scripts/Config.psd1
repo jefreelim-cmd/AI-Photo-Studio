@@ -206,6 +206,20 @@ Workflows = @{
 
     }
 
+    AutomaticWatermarkRemoval = @{
+
+        Enabled = $true
+
+        Name = "Automatic Watermark Removal - Commercial"
+
+        File = "02B - Automatic Watermark Removal - Commercial SDXL.api.json"
+
+        Prefix = "watermark_removal"
+
+        StageFolder = "02B - Watermark Removal"
+
+    }
+
 }
 
     ###########################################################################
@@ -238,6 +252,13 @@ Workflows = @{
             "Kontext"
             "CCSR"
             "CodeFormer"
+        )
+
+        WatermarkRemoveUpscale = @(
+            "AutomaticWatermarkRemoval"
+            "CCSR"
+            "CodeFormer"
+            "Upscale"
         )
 
     }

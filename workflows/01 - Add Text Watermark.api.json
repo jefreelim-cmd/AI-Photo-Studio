@@ -1,0 +1,36 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "plantpot.png"
+    }
+  },
+  "2": {
+    "class_type": "CR Simple Text Watermark",
+    "inputs": {
+      "image": [
+        "1",
+        0
+      ],
+      "text": "© Your Photo Restoration Business",
+      "align": "bottom right",
+      "opacity": 0.28,
+      "font_name": "Roboto-Regular.ttf",
+      "font_size": 42,
+      "font_color": "white",
+      "x_margin": 28,
+      "y_margin": 28,
+      "font_color_hex": "#FFFFFF"
+    }
+  },
+  "3": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ],
+      "filename_prefix": "watermarked/client_preview"
+    }
+  }
+}

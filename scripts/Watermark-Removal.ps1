@@ -1,0 +1,1 @@
+﻿.\Run-Pipeline.ps1 -Pipeline WatermarkRemoveUpscale

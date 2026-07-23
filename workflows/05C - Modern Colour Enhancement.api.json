@@ -1,0 +1,55 @@
+{
+  "1": {
+    "inputs": {
+      "image": "ccsr_kontext_Image-04_00001__00001_.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load original image"
+    }
+  },
+  "2": {
+    "inputs": {
+      "gamma": 1.0,
+      "contrast_recovery": 0.08,
+      "image": [
+        "14",
+        0
+      ],
+      "saturation_recovery": 0.16,
+      "colour_cast_correction": 0.25,
+      "white_balance_strength": 0.22
+    },
+    "class_type": "AIPhotoStudioColourCorrection",
+    "_meta": {
+      "title": "Conservative non-generative colour correction"
+    }
+  },
+  "10": {
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ],
+      "filename_prefix": "ddcolor_modern_"
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save colour-restored image"
+    }
+  },
+  "14": {
+    "_meta": {
+      "title": "DDColor — plausible modern colour"
+    },
+    "inputs": {
+      "model_input_size": 512,
+      "image": [
+        "1",
+        0
+      ],
+      "checkpoint": "ddcolor_paper_tiny.pth"
+    },
+    "class_type": "DDColor_Colorize"
+  }
+}

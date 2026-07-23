@@ -1,0 +1,183 @@
+{
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "Screenshot 2024-09-18 164856.jpg"
+    }
+  },
+  "2": {
+    "class_type": "Florence2ModelLoader",
+    "inputs": {
+      "model": "Florence-2-base",
+      "precision": "fp16",
+      "convert_to_safetensors": false
+    }
+  },
+  "3": {
+    "class_type": "Florence2Run",
+    "inputs": {
+      "image": [
+        "1",
+        0
+      ],
+      "florence2_model": [
+        "2",
+        0
+      ],
+      "text_input": "",
+      "task": "ocr_with_region",
+      "fill_mask": true,
+      "keep_model_loaded": false,
+      "max_new_tokens": 4096,
+      "num_beams": 3,
+      "do_sample": false,
+      "output_mask_select": "",
+      "seed": 1
+    }
+  },
+  "4": {
+    "class_type": "GrowMaskWithBlur",
+    "inputs": {
+      "mask": [
+        "3",
+        1
+      ],
+      "expand": 8,
+      "incremental_expandrate": 0.0,
+      "tapered_corners": true,
+      "flip_input": false,
+      "blur_radius": 3.0,
+      "lerp_alpha": 1.0,
+      "decay_factor": 1.0,
+      "fill_holes": true
+    }
+  },
+  "5": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "flux1-fill-dev.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "6": {
+    "class_type": "DualCLIPLoader",
+    "inputs": {
+      "clip_name1": "t5\\t5xxl_fp8_e4m3fn.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux",
+      "device": "default"
+    }
+  },
+  "7": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "FLUX1\\ae.safetensors"
+    }
+  },
+  "8": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "6",
+        0
+      ],
+      "text": "Remove the detected watermark, logo, signature, or overlaid text completely. Reconstruct the original photograph naturally underneath it. Preserve every area outside the mask."
+    }
+  },
+  "9": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "clip": [
+        "6",
+        0
+      ],
+      "text": "text, letters, logo, watermark, signature, stamp, blur, smudge, changed face, altered composition, artifacts"
+    }
+  },
+  "10": {
+    "class_type": "InpaintModelConditioning",
+    "inputs": {
+      "positive": [
+        "8",
+        0
+      ],
+      "negative": [
+        "9",
+        0
+      ],
+      "vae": [
+        "7",
+        0
+      ],
+      "pixels": [
+        "1",
+        0
+      ],
+      "mask": [
+        "4",
+        0
+      ],
+      "noise_mask": true
+    }
+  },
+  "11": {
+    "class_type": "FluxGuidance",
+    "inputs": {
+      "conditioning": [
+        "10",
+        0
+      ],
+      "guidance": 3.5
+    }
+  },
+  "12": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "5",
+        0
+      ],
+      "positive": [
+        "11",
+        0
+      ],
+      "negative": [
+        "10",
+        1
+      ],
+      "latent_image": [
+        "10",
+        2
+      ],
+      "seed": 42716609,
+      "steps": 28,
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1.0
+    }
+  },
+  "13": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "12",
+        0
+      ],
+      "vae": [
+        "7",
+        0
+      ]
+    }
+  },
+  "14": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "13",
+        0
+      ],
+      "filename_prefix": "watermark_removed/cleaned"
+    }
+  }
+}

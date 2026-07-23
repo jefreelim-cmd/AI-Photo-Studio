@@ -1,0 +1,360 @@
+{
+  "last_node_id": 7,
+  "last_link_id": 5,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [
+        20,
+        160
+      ],
+      "size": [
+        300,
+        310
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": null,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "plantpot.png",
+        "image"
+      ],
+      "title": "1. Load finished client image"
+    },
+    {
+      "id": 2,
+      "type": "CR Simple Text Watermark",
+      "pos": [
+        390,
+        120
+      ],
+      "size": [
+        330,
+        330
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CR Simple Text Watermark"
+      },
+      "widgets_values": [
+        "© Your Photo Restoration Business",
+        "bottom right",
+        0.28,
+        "Roboto-Regular.ttf",
+        42,
+        "white",
+        28,
+        28,
+        "#FFFFFF"
+      ],
+      "title": "2. Set business watermark text"
+    },
+    {
+      "id": 3,
+      "type": "LoadImage",
+      "pos": [
+        390,
+        520
+      ],
+      "size": [
+        300,
+        310
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": null,
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            3
+          ],
+          "shape": 3,
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "shape": 3,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "plantpot.png",
+        "image"
+      ],
+      "title": "OPTIONAL: Load transparent PNG logo"
+    },
+    {
+      "id": 4,
+      "type": "CR Overlay Transparent Image",
+      "pos": [
+        780,
+        290
+      ],
+      "size": [
+        350,
+        310
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "back_image",
+          "type": "IMAGE",
+          "link": 2
+        },
+        {
+          "name": "overlay_image",
+          "type": "IMAGE",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            4,
+            5
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CR Overlay Transparent Image"
+      },
+      "widgets_values": [
+        0.35,
+        24,
+        24,
+        0.0,
+        0.18
+      ],
+      "title": "OPTIONAL LOGO — select node and press Ctrl+B to enable"
+    },
+    {
+      "id": 5,
+      "type": "SaveImage",
+      "pos": [
+        1210,
+        145
+      ],
+      "size": [
+        320,
+        270
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 4
+        }
+      ],
+      "outputs": null,
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "watermarked/client_preview"
+      ],
+      "title": "3. Save watermarked photo"
+    },
+    {
+      "id": 6,
+      "type": "PreviewImage",
+      "pos": [
+        1210,
+        480
+      ],
+      "size": [
+        320,
+        270
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 5
+        }
+      ],
+      "outputs": null,
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      },
+      "widgets_values": null,
+      "title": "Preview"
+    },
+    {
+      "id": 7,
+      "type": "Note",
+      "pos": [
+        20,
+        20
+      ],
+      "size": [
+        690,
+        100
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": null,
+      "outputs": null,
+      "properties": {
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "Text watermark runs immediately. To add a logo: load a transparent PNG in node 3, select node 4, and press Ctrl+B to enable it. Transparency: 0 = opaque, 1 = invisible."
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      2,
+      0,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      1,
+      "IMAGE"
+    ],
+    [
+      4,
+      4,
+      0,
+      5,
+      0,
+      "IMAGE"
+    ],
+    [
+      5,
+      4,
+      0,
+      6,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "Required: text watermark",
+      "bounding": [
+        0,
+        0,
+        750,
+        490
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "title": "Optional: logo overlay (disabled by default)",
+      "bounding": [
+        360,
+        250,
+        800,
+        620
+      ],
+      "color": "#8a6f3d",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "title": "Output",
+      "bounding": [
+        1170,
+        80,
+        400,
+        720
+      ],
+      "color": "#3f8a55",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.82,
+      "offset": [
+        45,
+        35
+      ]
+    }
+  },
+  "version": 0.4
+}
